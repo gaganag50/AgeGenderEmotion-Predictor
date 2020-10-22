@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">AgePredictor</string>
+    <string name="camera_tutorial">Click photo and predict</string>
+    <string name="select_image_for_text_recognition">Select image for text recognition</string>
+    <string name="find_face_contour_button">Find face contour</string>
+
+
+
+    <string name="camera">Camera</string>
+    <string name="detect">Detect</string>
+</resources>
