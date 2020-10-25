@@ -7,7 +7,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import com.gagan.agepredictor.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MasterFragment.onItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
 
-        val fragment = TutorialFragment()
+        val fragment = MasterFragment()
         fragmentTransaction.add(R.id.fragment_container, fragment)
         fragmentTransaction.commit()
     }
@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         inflater.inflate(R.menu.menu_main, menu)
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle item selection
         return when (item.itemId) {
@@ -50,7 +51,8 @@ class MainActivity : AppCompatActivity() {
     private fun clickPhoto() {
 
     }
-    companion object{
+
+    companion object {
         const val TAG = "GAGAN"
         val data = listOf(
             R.drawable.black, R.drawable.boy, R.drawable.couple,
@@ -62,5 +64,20 @@ class MainActivity : AppCompatActivity() {
             R.drawable.shawn_resized,
             R.drawable.arjit_resized
         )
+    }
+
+    override fun onItemSelected(position: Int) {
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+
+        val fragment = DetailsFragment()
+        val bundle = Bundle()
+        bundle.putInt("position", position)
+        fragment.arguments = bundle
+        fragmentTransaction.replace(R.id.fragment_container, fragment)
+        fragmentTransaction.addToBackStack(null)
+        fragmentTransaction.commit()
+
+
     }
 }

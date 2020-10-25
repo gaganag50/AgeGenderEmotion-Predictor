@@ -8,4 +8,8 @@
 
     <string name="camera">Camera</string>
     <string name="detect">Detect</string>
+    <string name="faces">Find Faces</string>
+    <string name="find_age_gender">Find Age and Gender</string>
+    <string name="blurfaces">BlurFaces</string>
+    <string name="emotion">Emotion</string>
 </resources>

@@ -3,39 +3,78 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
+
 
     <ImageView
         android:id="@+id/image_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:contentDescription="@string/select_image_for_text_recognition"
+        android:foregroundGravity="center"
 
         android:scaleType="fitStart"
-        app:layout_constraintBottom_toTopOf="@+id/button_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-    <Button
-        android:id="@+id/button_text"
-        android:layout_width="0dp"
-        android:layout_height="55dp"
-        android:text="@string/camera"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/button_face" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_height="350dp"
+        tools:layout_width="350dp" />
 
     <Button
-        android:id="@+id/button_face"
-        android:layout_width="0dp"
-        android:layout_height="55dp"
-        android:text="@string/find_face_contour_button"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/blurFaces"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/blurfaces"
+        app:layout_constraintBaseline_toBaselineOf="@+id/emotion"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/button_text" />
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/emotion" />
+
+    <Button
+        android:id="@+id/button_detect_faces"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/faces"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/button_age_gender"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button_age_gender"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/find_age_gender"
+        app:layout_constraintBaseline_toBaselineOf="@+id/button_detect_faces"
+        app:layout_constraintEnd_toStartOf="@+id/emotion"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/button_detect_faces" />
+
+    <Button
+        android:id="@+id/emotion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/emotion"
+        app:layout_constraintBaseline_toBaselineOf="@+id/button_age_gender"
+        app:layout_constraintEnd_toStartOf="@+id/blurFaces"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/button_age_gender" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/button_age_gender"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.21"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/image_view">
+
+        <TextView
+            android:id="@+id/details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

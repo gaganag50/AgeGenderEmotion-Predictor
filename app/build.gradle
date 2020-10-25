@@ -27,11 +27,24 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
+
+
+
+
 }
 
 // Sanity check if you have trained and downloaded TF Lite model.
 preBuild.doFirst {
-    assert file("./src/main/assets/mnist.tflite").exists() :
+    assert file("./src/main/assets/mnist.tflite").exists():
             "mnist.tflite not found. Make sure you have trained and " +
                     "downloaded your TensorFlow Lite model to assets/ folder"
 }
@@ -55,4 +68,12 @@ dependencies {
     implementation "org.tensorflow:tensorflow-lite:2.3.0"
     implementation "com.google.mlkit:face-detection:16.0.2"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-beta01"
+
+
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+    implementation "androidx.fragment:fragment-ktx:1.2.5"
+
+    implementation "com.github.hadilq.liveevent:liveevent:1.2.0"
 }
+
+
