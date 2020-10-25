@@ -15,4 +15,6 @@
     <string name="find_faces">Find Faces</string>
     <string name="age">Age</string>
     <string name="gender">gender</string>
+    <string name="description_individual_face">individual face</string>
+    <string name="blur_this_face">BLUR this face</string>
 </resources>

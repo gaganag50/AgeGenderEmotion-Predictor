@@ -19,12 +19,12 @@ import java.nio.ByteOrder
 class Classifier : ViewModel() {
 
 
-    val infoRegardingFaces = SingleLiveEvent<List<ItemDetected>>()
+    val infoRegardingFaces = SingleLiveEvent<List<InfoExtracted>>()
 
 
     private var interpreter: Interpreter? = null
 
-    var isInitialized = false
+    private var isInitialized = false
         private set
 
     private var inputImageWidth: Int = 0 // will be inferred from TF Lite model.
@@ -32,8 +32,10 @@ class Classifier : ViewModel() {
     private var modelInputSize: Int = 0 // will be inferred from TF Lite model.
 
 
-    fun runFaceContourDetection(mSelectedImage: Bitmap, frame: Mat,      ageGenderModelInitialization: Pair<Net, Net>,
-                                model: ByteBuffer) {
+    fun runFaceContourDetection(
+        mSelectedImage: Bitmap, frame: Mat, ageGenderModelInitialization: Pair<Net, Net>,
+        model: ByteBuffer
+    ) {
         val highAccuracyOpts = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
             .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
@@ -45,7 +47,7 @@ class Classifier : ViewModel() {
         val detector = FaceDetection.getClient(highAccuracyOpts)
         detector.process(image)
             .addOnSuccessListener { faces ->
-                processFaceContourDetectionResult(frame, faces,ageGenderModelInitialization,model )
+                processFaceContourDetectionResult(frame, faces, ageGenderModelInitialization, model)
             }
             .addOnFailureListener { e ->
                 e.message?.let { Log.d(TAG, "runFaceContourDetection: ${it}") }
@@ -75,7 +77,7 @@ class Classifier : ViewModel() {
             return
         }
         val (ageNet, genderNet) = ageGenderModelInitialization
-        val infoList: MutableList<ItemDetected> = mutableListOf()
+        val infoList: MutableList<InfoExtracted> = mutableListOf()
 
         var age: String
         var gender: String
@@ -117,7 +119,7 @@ class Classifier : ViewModel() {
             emotion = detectedEmotion.first
             val emotionConfidence = detectedEmotion.second
 
-            infoList.add(ItemDetected(bounds, age, gender, emotion))
+            infoList.add(InfoExtracted(bounds, age, gender, emotion))
 
         }
         infoRegardingFaces.value = infoList

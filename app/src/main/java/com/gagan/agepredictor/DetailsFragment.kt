@@ -12,26 +12,32 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.gagan.agepredictor.MainActivity.Companion.TAG
 import com.gagan.agepredictor.MainActivity.Companion.data
-import com.gagan.agepredictor.databinding.DetailsFragmentBinding
+import com.gagan.agepredictor.databinding.FragmentDetailsBinding
+import kotlinx.coroutines.launch
 import org.opencv.android.Utils
 import org.opencv.core.*
-import org.opencv.core.Core.FONT_HERSHEY_SIMPLEX
 import org.opencv.dnn.Dnn
 import org.opencv.dnn.Net
 import org.opencv.imgproc.Imgproc
 import java.io.*
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
+import kotlin.math.roundToInt
 
 
-class DetailsFragment : Fragment() {
-    private val informationExtracted: MutableList<ItemDetected> = mutableListOf()
+class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
+    private lateinit var viewManager: RecyclerView.LayoutManager
+
+    private val itemDetectedList: MutableList<ItemDetected> = mutableListOf()
+    private var infoExtractedList: List<InfoExtracted> = listOf()
     private var viewAdapter: DetailsAdapter? = null
 
-    private var _binding: DetailsFragmentBinding? = null
+    private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
     lateinit var mSelectedImage: Bitmap
     lateinit var frame: Mat
@@ -40,33 +46,6 @@ class DetailsFragment : Fragment() {
 
     private lateinit var ageNet: Net
     private lateinit var genderNet: Net
-
-    fun draw_label(
-        image: Mat, point: Point, label: String, font: Int = FONT_HERSHEY_SIMPLEX,
-        font_scale: Double = 0.8, thickness: Int = 1
-    ) {
-        val baseLine = IntArray(1)
-
-
-        val size = Imgproc.getTextSize(label, font, font_scale, thickness, baseLine)
-        val (x, y) = Pair(point.x, point.y)
-        Imgproc.rectangle(
-            image,
-            Point(x, y - size.height),
-            Point(x + size.width, y + baseLine[0]),
-            Scalar(255.0, 0.0, 0.0),
-            -1
-        )
-
-        Imgproc.putText(
-            image,
-            label,
-            point,
-            font,
-            font_scale,
-            Scalar(255.0, 255.0, 255.0), thickness, Imgproc.LINE_AA
-        )
-    }
 
     @Throws(IOException::class)
     fun loadModelFile(assetManager: AssetManager, filename: String): ByteBuffer {
@@ -78,13 +57,13 @@ class DetailsFragment : Fragment() {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
-    fun emotionModelInitialization(): ByteBuffer {
+    private fun emotionModelInitialization(): ByteBuffer {
         val assetManager = requireContext().assets
         val model = loadModelFile(assetManager, "mnist.tflite")
         return model
     }
 
-    fun ageGenderModelInitilaziton(): Pair<Net, Net> {
+    private fun ageGenderModelInitilaziton(): Pair<Net, Net> {
         val protoAge: String = getPath("age_deploy.prototxt", requireContext())
         val weightsAge: String = getPath("age_net.caffemodel", requireContext())
         ageNet = Dnn.readNetFromCaffe(protoAge, weightsAge)
@@ -100,36 +79,83 @@ class DetailsFragment : Fragment() {
 
     }
 
+    fun anonymizeFaceSimple(image: Mat, position: Int, factor: Double = 3.0) {
+
+        val (h, w) = Pair(image.height(), image.width())
+        var kW = (w / factor).roundToInt()
+        var kH = (h / factor).roundToInt()
+        if (kW % 2 == 0) {
+            kW -= 1
+        }
+        if (kH % 2 == 0) {
+            kH -= 1
+        }
+        val rect = infoExtractedList.get(position).rect
+
+
+        val left = rect.left
+        val top = rect.top
+        val right = rect.right
+        val bottom = rect.bottom
+
+        val roi = Rect(
+            Point(left.toDouble(), top.toDouble()),
+            Point(right.toDouble(), bottom.toDouble())
+        )
+
+
+
+        Imgproc.GaussianBlur(
+            Mat(frame, roi),
+            Mat(frame, roi),
+            Size(kW.toDouble(), kH.toDouble()),
+            0.0
+        )
+        Utils.matToBitmap(frame, mSelectedImage)
+        binding.imageView.setImageBitmap(mSelectedImage)
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val viewManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
         binding.findFaces.setOnClickListener {
-            val ageGenderModelInitilaziton = ageGenderModelInitilaziton()
-            val emotionModelInitialization = emotionModelInitialization()
-            classifier.runFaceContourDetection(
-                mSelectedImage,
-                frame,
-                ageGenderModelInitilaziton,
-                emotionModelInitialization
-            )
+
+                val ageGenderModelInitilaziton = ageGenderModelInitilaziton()
+                val emotionModelInitialization = emotionModelInitialization()
+                classifier.runFaceContourDetection(
+                    mSelectedImage,
+                    frame,
+                    ageGenderModelInitilaziton,
+                    emotionModelInitialization
+                )
+
         }
 
 
 
         classifier.infoRegardingFaces.observe(viewLifecycleOwner, { boundsList ->
-            informationExtracted.clear()
+            itemDetectedList.clear()
+            infoExtractedList = boundsList
             showToast("${boundsList.size} faces detected")
             for ((index, items) in boundsList.withIndex()) {
-                val bounds = items.rect!!
+                val bounds = items.rect
                 val left = bounds.left
                 val top = bounds.top
                 val right = bounds.right
                 val bottom = bounds.bottom
 
-
-
+                val rectCrop = Rect(
+                    Point(left.toDouble(), top.toDouble()),
+                    Point(right.toDouble(), bottom.toDouble())
+                )
+                val croppedFace = Mat(frame, rectCrop)
+                val faceBitmap = Bitmap.createBitmap(
+                    croppedFace.width(),
+                    croppedFace.height(),
+                    Bitmap.Config.ARGB_8888
+                )
+                Utils.matToBitmap(croppedFace, faceBitmap)
                 Imgproc.rectangle(
                     frame,
                     Point(left.toDouble(), top.toDouble()),
@@ -138,34 +164,31 @@ class DetailsFragment : Fragment() {
                     3
                 )
 
-                draw_label(frame, Point(left.toDouble(), top.toDouble()), (index + 1).toString())
+
                 val age = items.ageBucket
                 val gender = items.gender
                 val emotion = items.emotion
-                informationExtracted.add(ItemDetected(null, age, gender, emotion))
+
+
+                itemDetectedList.add(ItemDetected(faceBitmap, age, gender, emotion))
 
 
             }
 
-            val displayBitmap = mSelectedImage
-            Utils.matToBitmap(frame, displayBitmap)
-            binding.imageView.setImageBitmap(displayBitmap)
+            Utils.matToBitmap(frame, mSelectedImage)
+
+            binding.imageView.setImageBitmap(mSelectedImage)
             viewAdapter?.notifyDataSetChanged()
         })
 
+        viewManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
+        viewAdapter = DetailsAdapter(itemDetectedList, this)
 
-        viewAdapter = DetailsAdapter(informationExtracted)
-
-        binding.details.apply {
-
-
-            // use a linear layout manager
+        binding.recyclerView.apply {
             layoutManager = viewManager
-
-            // specify an viewAdapter (see also next example)
             adapter = viewAdapter
-
         }
+
     }
 
 //    private fun setTextInTextView(list: MutableList<ItemDetected>) {
@@ -206,9 +229,8 @@ class DetailsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = DetailsFragmentBinding.inflate(inflater, container, false)
+        _binding = FragmentDetailsBinding.inflate(inflater, container, false)
         val view = binding.root
-
 
 
         val filePath = arguments?.getString("filePath")
@@ -223,10 +245,11 @@ class DetailsFragment : Fragment() {
                 Log.d(TAG, "onCreateView: filePath is  NULL")
                 mSelectedImage = BitmapFactory.decodeResource(
                     context?.resources,
-                    data[position])
+                    data[position]
+                )
 
             }
-        } else{
+        } else {
             mSelectedImage = BitmapFactory.decodeFile(filePath)
         }
 
@@ -265,6 +288,13 @@ class DetailsFragment : Fragment() {
             Log.i(TAG, "Failed to upload a file")
         }
         return ""
+    }
+
+    override fun onBlurFace(position: Int) {
+        val face = itemDetectedList.get(position).face
+        val image = Mat()
+        Utils.bitmapToMat(face, image)
+        anonymizeFaceSimple(image, position)
     }
 
 }

@@ -1,12 +1,10 @@
 package com.gagan.agepredictor
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.gagan.agepredictor.MainActivity.Companion.TAG
 import com.gagan.agepredictor.lib.BannerAdapterHelper
 
 
@@ -19,13 +17,13 @@ class CardAdapter(val list: List<Int>,val onClickListener: onPhotoSelectedListen
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Lodu {
         val itemView: View =
-            LayoutInflater.from(parent.context).inflate(R.layout.view_card_item, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.item_view_card, parent, false)
         mBannerAdapterHelper.onCreateViewHolder(parent, itemView)
         return Lodu(itemView,onClickListener)
     }
 
     override fun onBindViewHolder(holder: Lodu, position: Int) {
-        mBannerAdapterHelper.onBindViewHolder(holder.itemView, position, getItemCount())
+        mBannerAdapterHelper.onBindViewHolder(holder.itemView, position, itemCount)
         holder.mImageView.setImageResource(list[position % list.size])
     }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,13 +10,13 @@
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="200dp"
         android:layout_gravity="center"
         android:layout_marginTop="16dp"
         android:foregroundGravity="center"
 
 
-     />
+        />
 
     <Button
         android:id="@+id/find_faces"
@@ -26,15 +27,16 @@
         android:layout_marginEnd="16dp"
         android:foregroundGravity="center"
         android:gravity="center"
-        android:text="@string/find_faces"
- />
+        android:text="@string/find_faces" />
+
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/details"
-        android:layout_marginTop="16dp"
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:listitem="@layout/detail_list_item"/>
+        android:layout_height="match_parent"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        tools:listitem="@layout/item_card_content"/>
 
 
 </LinearLayout>

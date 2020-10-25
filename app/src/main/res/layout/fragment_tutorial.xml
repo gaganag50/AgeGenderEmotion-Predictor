@@ -9,14 +9,7 @@
     tools:context="com.gagan.agepredictor.TutorialFragment">
 
 
-    <ImageView
-        android:id="@+id/blurView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#3f000000"
-        android:scaleType="centerCrop"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+
 
     <com.gagan.agepredictor.custom_views.VpSwipeRefreshLayout
         android:id="@+id/swipeLayout"

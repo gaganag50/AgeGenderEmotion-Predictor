@@ -1,3 +1,5 @@
 package com.gagan.agepredictor
 
-data class ItemDetected(var rect:android.graphics.Rect?,var ageBucket: String, var gender: String, var emotion: String)
+import android.graphics.Bitmap
+
+data class ItemDetected(var face: Bitmap, var ageBucket: String, var gender: String, var emotion: String)
