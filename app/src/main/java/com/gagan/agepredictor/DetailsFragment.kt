@@ -79,47 +79,17 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
 
     }
 
-    fun anonymizeFaceSimple(image: Mat, position: Int, factor: Double = 3.0) {
-
-        val (h, w) = Pair(image.height(), image.width())
-        var kW = (w / factor).roundToInt()
-        var kH = (h / factor).roundToInt()
-        if (kW % 2 == 0) {
-            kW -= 1
-        }
-        if (kH % 2 == 0) {
-            kH -= 1
-        }
-        val rect = infoExtractedList.get(position).rect
-
-
-        val left = rect.left
-        val top = rect.top
-        val right = rect.right
-        val bottom = rect.bottom
-
-        val roi = Rect(
-            Point(left.toDouble(), top.toDouble()),
-            Point(right.toDouble(), bottom.toDouble())
-        )
-
-
-
-        Imgproc.GaussianBlur(
-            Mat(frame, roi),
-            Mat(frame, roi),
-            Size(kW.toDouble(), kH.toDouble()),
-            0.0
-        )
-        Utils.matToBitmap(frame, mSelectedImage)
-        binding.imageView.setImageBitmap(mSelectedImage)
-    }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        classifier.isProcessing.observe(viewLifecycleOwner, {
+            when {
+                it -> binding.progressBar.visibility = View.VISIBLE
+                else -> binding.progressBar.visibility = View.GONE
+            }
+        })
         binding.findFaces.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
 
                 val ageGenderModelInitilaziton = ageGenderModelInitilaziton()
                 val emotionModelInitialization = emotionModelInitialization()
@@ -130,6 +100,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
                     emotionModelInitialization
                 )
 
+            }
         }
 
 
@@ -291,10 +262,11 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
     }
 
     override fun onBlurFace(position: Int) {
-        val face = itemDetectedList.get(position).face
-        val image = Mat()
-        Utils.bitmapToMat(face, image)
-        anonymizeFaceSimple(image, position)
+        viewLifecycleOwner.lifecycleScope.launch {
+            classifier.anonymizeFaceSimple(frame, position)
+        }
+        Utils.matToBitmap(frame, mSelectedImage)
+        binding.imageView.setImageBitmap(mSelectedImage)
     }
 
 }

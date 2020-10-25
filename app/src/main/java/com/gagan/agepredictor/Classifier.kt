@@ -12,16 +12,18 @@ import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.dnn.Dnn
 import org.opencv.dnn.Net
+import org.opencv.imgproc.Imgproc
 import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.roundToInt
 
 class Classifier : ViewModel() {
 
 
     val infoRegardingFaces = SingleLiveEvent<List<InfoExtracted>>()
-
-
+    val isProcessing = SingleLiveEvent<Boolean>()
+    val boundingBoxes: MutableList<android.graphics.Rect> = mutableListOf()
     private var interpreter: Interpreter? = null
 
     private var isInitialized = false
@@ -32,10 +34,22 @@ class Classifier : ViewModel() {
     private var modelInputSize: Int = 0 // will be inferred from TF Lite model.
 
 
+    private fun processDNN(
+        net: Net,
+        faceBlob: Mat,
+        allowedValues: List<String>
+    ): Pair<String, Double> {
+        net.setInput(faceBlob)
+        val predictions: Mat = net.forward()
+        val (index, max) = predictions.maxProb()
+        return Pair(allowedValues[index], max)
+    }
+
     fun runFaceContourDetection(
         mSelectedImage: Bitmap, frame: Mat, ageGenderModelInitialization: Pair<Net, Net>,
         model: ByteBuffer
     ) {
+        isProcessing.value = true
         val highAccuracyOpts = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
             .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
@@ -55,17 +69,6 @@ class Classifier : ViewModel() {
     }
 
 
-    private fun processDNN(
-        net: Net,
-        faceBlob: Mat,
-        allowedValues: List<String>
-    ): Pair<String, Double> {
-        net.setInput(faceBlob)
-        val predictions: Mat = net.forward()
-        val (index, max) = predictions.maxProb()
-        return Pair(allowedValues[index], max)
-    }
-
     private fun processFaceContourDetectionResult(
         frame: Mat,
         faces: List<Face>,
@@ -82,12 +85,12 @@ class Classifier : ViewModel() {
         var age: String
         var gender: String
         var emotion: String
-
+        boundingBoxes.clear()
         for (face in faces) {
 
             //age,gender,emotion
             val bounds = face.boundingBox
-
+            boundingBoxes.add(bounds)
             val left = bounds.left
             val top = bounds.top
             val right = bounds.right
@@ -123,6 +126,44 @@ class Classifier : ViewModel() {
 
         }
         infoRegardingFaces.value = infoList
+        isProcessing.value = false
+
+    }
+
+    fun anonymizeFaceSimple(frame: Mat, position: Int, factor: Double = 3.0) {
+        isProcessing.value = true
+        val rect = boundingBoxes.get(position)
+        val (h, w) = Pair(rect.height(), rect.width())
+        var kW = (w / factor).roundToInt()
+        var kH = (h / factor).roundToInt()
+        if (kW % 2 == 0) {
+            kW -= 1
+        }
+        if (kH % 2 == 0) {
+            kH -= 1
+        }
+
+
+
+        val left = rect.left
+        val top = rect.top
+        val right = rect.right
+        val bottom = rect.bottom
+
+        val roi = Rect(
+            Point(left.toDouble(), top.toDouble()),
+            Point(right.toDouble(), bottom.toDouble())
+        )
+
+
+
+        Imgproc.GaussianBlur(
+            Mat(frame, roi),
+            Mat(frame, roi),
+            Size(kW.toDouble(), kH.toDouble()),
+            0.0
+        )
+        isProcessing.value = false
 
     }
 
@@ -168,7 +209,7 @@ class Classifier : ViewModel() {
     }
 
 
-    fun detectEmotion(model: ByteBuffer, croppedFace: Mat): Pair<String, Float> {
+    private fun detectEmotion(model: ByteBuffer, croppedFace: Mat): Pair<String, Float> {
         initializeInterpreter(model)
 
         check(isInitialized) { "TF Lite Interpreter is not initialized yet." }
