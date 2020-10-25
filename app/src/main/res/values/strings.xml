@@ -12,4 +12,7 @@
     <string name="find_age_gender">Find Age and Gender</string>
     <string name="blurfaces">BlurFaces</string>
     <string name="emotion">Emotion</string>
+    <string name="find_faces">Find Faces</string>
+    <string name="age">Age</string>
+    <string name="gender">gender</string>
 </resources>

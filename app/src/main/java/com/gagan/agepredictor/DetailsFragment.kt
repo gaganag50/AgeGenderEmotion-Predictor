@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.gagan.agepredictor.MainActivity.Companion.TAG
 import com.gagan.agepredictor.MainActivity.Companion.data
 import com.gagan.agepredictor.databinding.DetailsFragmentBinding
@@ -27,7 +28,9 @@ import java.nio.channels.FileChannel
 
 
 class DetailsFragment : Fragment() {
-    private val list: MutableList<ItemDetected> = mutableListOf()
+    private val informationExtracted: MutableList<ItemDetected> = mutableListOf()
+    private var viewAdapter: DetailsAdapter? = null
+
     private var _binding: DetailsFragmentBinding? = null
     private val binding get() = _binding!!
     lateinit var mSelectedImage: Bitmap
@@ -45,13 +48,12 @@ class DetailsFragment : Fragment() {
         val baseLine = IntArray(1)
 
 
-
-        val size = Imgproc.getTextSize(label, font, font_scale, thickness,baseLine)
+        val size = Imgproc.getTextSize(label, font, font_scale, thickness, baseLine)
         val (x, y) = Pair(point.x, point.y)
         Imgproc.rectangle(
             image,
             Point(x, y - size.height),
-            Point(x + size.width, y+baseLine[0]),
+            Point(x + size.width, y + baseLine[0]),
             Scalar(255.0, 0.0, 0.0),
             -1
         )
@@ -62,7 +64,7 @@ class DetailsFragment : Fragment() {
             point,
             font,
             font_scale,
-            Scalar(255.0,255.0,255.0), thickness, Imgproc.LINE_AA
+            Scalar(255.0, 255.0, 255.0), thickness, Imgproc.LINE_AA
         )
     }
 
@@ -101,40 +103,26 @@ class DetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val viewManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-
-//        executorService.execute {
-//            initializeInterpreter()
-//
-//        }
-
-
-        binding.buttonDetectFaces.setOnClickListener {
-            classifier.runFaceContourDetection(mSelectedImage, frame)
-        }
-        binding.buttonAgeGender.setOnClickListener {
+        binding.findFaces.setOnClickListener {
             val ageGenderModelInitilaziton = ageGenderModelInitilaziton()
-            classifier.detectAgeGender(ageGenderModelInitilaziton)
-        }
-        binding.emotion.setOnClickListener {
             val emotionModelInitialization = emotionModelInitialization()
-            classifier.detectEmotion(emotionModelInitialization)
+            classifier.runFaceContourDetection(
+                mSelectedImage,
+                frame,
+                ageGenderModelInitilaziton,
+                emotionModelInitialization
+            )
         }
-        binding.blurFaces.setOnClickListener {
-
-        }
-//        classifier.faceDetectionProcessing.observe(viewLifecycleOwner, {
-//            if (it) {
-//                Log.d(TAG, "onViewCreated: complete")
-//            } else {
-//                Log.d(TAG, "onViewCreated: NOT complete")
-//            }
-//
-//        })
 
 
-        classifier.faceDetected.observe(viewLifecycleOwner, { boundsList ->
-            for ((index, bounds) in boundsList.withIndex()) {
+
+        classifier.infoRegardingFaces.observe(viewLifecycleOwner, { boundsList ->
+            informationExtracted.clear()
+            showToast("${boundsList.size} faces detected")
+            for ((index, items) in boundsList.withIndex()) {
+                val bounds = items.rect!!
                 val left = bounds.left
                 val top = bounds.top
                 val right = bounds.right
@@ -146,80 +134,69 @@ class DetailsFragment : Fragment() {
                     frame,
                     Point(left.toDouble(), top.toDouble()),
                     Point(right.toDouble(), bottom.toDouble()),
-                    Scalar(0.0, 255.0, 0.0), 3
+                    Scalar(0.0, 255.0, 0.0),
+                    3
                 )
 
-                draw_label(frame,Point(left.toDouble(), top.toDouble()),(index + 1).toString())
+                draw_label(frame, Point(left.toDouble(), top.toDouble()), (index + 1).toString())
+                val age = items.ageBucket
+                val gender = items.gender
+                val emotion = items.emotion
+                informationExtracted.add(ItemDetected(null, age, gender, emotion))
 
-
-
-                binding.details.text = "${boundsList.size} faces detected"
-                list.clear()
-                for (i in 0 until boundsList.size) {
-                    val item = ItemDetected(null, null, null)
-                    list.add(item)
-                }
 
             }
+
             val displayBitmap = mSelectedImage
             Utils.matToBitmap(frame, displayBitmap)
             binding.imageView.setImageBitmap(displayBitmap)
+            viewAdapter?.notifyDataSetChanged()
         })
 
-        classifier.age.observe(viewLifecycleOwner, { detectedage ->
-            for ((index, age) in detectedage.withIndex()) {
-                Log.d(TAG, "onViewCreated: age = ${age.first} confidence = ${age.second}")
-                list[index].ageBucket = age.first
-            }
 
-            setTextInTextView(list)
-        })
-        classifier.gender.observe(viewLifecycleOwner, {
-            Log.d(TAG, "onViewCreated: ${it.size}")
-            for ((index, gender) in it.withIndex()) {
-                Log.d(TAG, "onViewCreated: gender = ${gender.first} conf = ${gender.second}")
-                list[index].gender = gender.first
-            }
-            setTextInTextView(list)
-        })
-        classifier.emotion.observe(viewLifecycleOwner, {
-            for ((index, emo) in it.withIndex()) {
-                Log.d(TAG, "onViewCreated: emo = ${emo.first} conf = ${emo.second}")
-                list[index].emotion = emo.first
-            }
-            setTextInTextView(list)
-        })
+        viewAdapter = DetailsAdapter(informationExtracted)
+
+        binding.details.apply {
+
+
+            // use a linear layout manager
+            layoutManager = viewManager
+
+            // specify an viewAdapter (see also next example)
+            adapter = viewAdapter
+
+        }
     }
 
-    private fun setTextInTextView(list: MutableList<ItemDetected>) {
-        var displayText: String = String()
-        var displayList: MutableList<String> = mutableListOf()
-
-        for (faceDetails in list) {
-            val age = faceDetails.ageBucket
-            val gender = faceDetails.gender
-            val emo = faceDetails.emotion
-            var faceString = String()
-            if (age != null) {
-                faceString += "\nAGE: $age"
-            }
-            if (gender != null) {
-                faceString += "\nGENDER: $gender"
-            }
-            if (emo != null) {
-                faceString += "\nEMOTION: $emo"
-            }
-
-            displayList.add(faceString)
-        }
-//        if(displayList.isNotEmpty()) {
-//            displayList = displayList.drop(1) as MutableList<String>
+//    private fun setTextInTextView(list: MutableList<ItemDetected>) {
+//        var displayText: String = String()
+//        var displayList: MutableList<String> = mutableListOf()
+//
+//        for (faceDetails in list) {
+//            val age = faceDetails.ageBucket
+//            val gender = faceDetails.gender
+//            val emo = faceDetails.emotion
+//            var faceString = String()
+//            if (age != null) {
+//                faceString += "\nAGE: $age"
+//            }
+//            if (gender != null) {
+//                faceString += "\nGENDER: $gender"
+//            }
+//            if (emo != null) {
+//                faceString += "\nEMOTION: $emo"
+//            }
+//
+//            displayList.add(faceString)
 //        }
-        for (item in displayList) {
-            displayText += item
-        }
-        binding.details.text = displayText
-    }
+////        if(displayList.isNotEmpty()) {
+////            displayList = displayList.drop(1) as MutableList<String>
+////        }
+////        for (item in displayList) {
+////            displayText += item
+////        }
+////        binding.details.text = displayText
+//    }
 
     private fun showToast(message: String) =
         Toast.makeText(activity?.applicationContext, message, Toast.LENGTH_SHORT).show()
@@ -231,24 +208,33 @@ class DetailsFragment : Fragment() {
     ): View? {
         _binding = DetailsFragmentBinding.inflate(inflater, container, false)
         val view = binding.root
-        val position = arguments?.getInt("position")
-        if (position == null) {
-            showToast("UnRecognized command")
-            activity?.onBackPressed()
-        } else {
-            mSelectedImage = BitmapFactory.decodeResource(
-                context?.resources,
-                data[position]
-            )
-//            Log.d(
-//                TAG,
-//                "onCreateView: ${mSelectedImage.width} ${mSelectedImage.height} ${mSelectedImage.colorSpace}"
-//            )
-            binding.imageView.setImageBitmap(mSelectedImage)
-            frame = Mat()
-            Utils.bitmapToMat(mSelectedImage, frame)
-            Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGBA2RGB)
+
+
+
+        val filePath = arguments?.getString("filePath")
+
+
+        if (filePath == null) {
+            val position = arguments?.getInt("position")
+            if (position == null) {
+                showToast("UnRecognized command")
+                activity?.onBackPressed()
+            } else {
+                Log.d(TAG, "onCreateView: filePath is  NULL")
+                mSelectedImage = BitmapFactory.decodeResource(
+                    context?.resources,
+                    data[position])
+
+            }
+        } else{
+            mSelectedImage = BitmapFactory.decodeFile(filePath)
         }
+
+
+        binding.imageView.setImageBitmap(mSelectedImage)
+        frame = Mat()
+        Utils.bitmapToMat(mSelectedImage, frame)
+        Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGBA2RGB)
 
 
         return view
@@ -276,7 +262,7 @@ class DetailsFragment : Fragment() {
             // Return a path to file which may be read in common way.
             return outFile.absolutePath
         } catch (ex: IOException) {
-            Log.i(MainActivity.TAG, "Failed to upload a file")
+            Log.i(TAG, "Failed to upload a file")
         }
         return ""
     }

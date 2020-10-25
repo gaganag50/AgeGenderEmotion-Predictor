@@ -2,14 +2,12 @@ package com.gagan.agepredictor
 
 import android.graphics.Bitmap
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.gagan.agepredictor.ext.maxProb
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.hadilq.liveevent.LiveEvent
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.dnn.Dnn
@@ -17,29 +15,15 @@ import org.opencv.dnn.Net
 import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.max
-import kotlin.math.min
 
 class Classifier : ViewModel() {
 
 
-    val boundsList: MutableList<android.graphics.Rect> = mutableListOf()
+    val infoRegardingFaces = SingleLiveEvent<List<ItemDetected>>()
 
 
-    val faceDetected = SingleLiveEvent<MutableList<android.graphics.Rect>>()
-    val gender = SingleLiveEvent<MutableList<Pair<Char, Double>>>()
-    val age = SingleLiveEvent<MutableList<Pair<String, Double>>>()
-    val emotion = SingleLiveEvent<MutableList<Pair<String, Float>>>()
-
-
-//    val faceDetectionProcessing = MutableLiveData<Boolean>(false)
-
-
-    private val faceList: MutableList<Mat> = mutableListOf()
-    private val detectedGenderList: MutableList<Pair<Char, Double>> = mutableListOf()
-    private val detectedAgeList: MutableList<Pair<String, Double>> = mutableListOf()
-    private val detectedEmotionList: MutableList<Pair<String, Float>> = mutableListOf()
     private var interpreter: Interpreter? = null
+
     var isInitialized = false
         private set
 
@@ -48,7 +32,8 @@ class Classifier : ViewModel() {
     private var modelInputSize: Int = 0 // will be inferred from TF Lite model.
 
 
-    fun runFaceContourDetection(mSelectedImage: Bitmap, frame: Mat) {
+    fun runFaceContourDetection(mSelectedImage: Bitmap, frame: Mat,      ageGenderModelInitialization: Pair<Net, Net>,
+                                model: ByteBuffer) {
         val highAccuracyOpts = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
             .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
@@ -60,25 +45,47 @@ class Classifier : ViewModel() {
         val detector = FaceDetection.getClient(highAccuracyOpts)
         detector.process(image)
             .addOnSuccessListener { faces ->
-                processFaceContourDetectionResult(frame, faces)
+                processFaceContourDetectionResult(frame, faces,ageGenderModelInitialization,model )
             }
             .addOnFailureListener { e ->
                 e.message?.let { Log.d(TAG, "runFaceContourDetection: ${it}") }
             }
     }
 
-    fun processFaceContourDetectionResult(frame: Mat, faces: List<Face>) {
+
+    private fun processDNN(
+        net: Net,
+        faceBlob: Mat,
+        allowedValues: List<String>
+    ): Pair<String, Double> {
+        net.setInput(faceBlob)
+        val predictions: Mat = net.forward()
+        val (index, max) = predictions.maxProb()
+        return Pair(allowedValues[index], max)
+    }
+
+    private fun processFaceContourDetectionResult(
+        frame: Mat,
+        faces: List<Face>,
+        ageGenderModelInitialization: Pair<Net, Net>,
+        model: ByteBuffer
+    ) {
         if (faces.isEmpty()) {
             Log.d(TAG, "processFaceContourDetectionResult: No face found")
             return
         }
+        val (ageNet, genderNet) = ageGenderModelInitialization
+        val infoList: MutableList<ItemDetected> = mutableListOf()
 
-        boundsList.clear()
+        var age: String
+        var gender: String
+        var emotion: String
 
-        faceList.clear()
         for (face in faces) {
+
+            //age,gender,emotion
             val bounds = face.boundingBox
-            boundsList.add(bounds)
+
             val left = bounds.left
             val top = bounds.top
             val right = bounds.right
@@ -90,83 +97,35 @@ class Classifier : ViewModel() {
                 Point(right.toDouble(), bottom.toDouble())
             )
             val croppedFace = Mat(frame, rectCrop)
-            faceList.add(croppedFace)
-
-
-        }
-        faceDetected.value = boundsList
-
-    }
-
-
-    fun detectAgeGender(ageGenderModelInitilaziton: Pair<Net, Net>) {
-        val (ageNet, genderNet) = ageGenderModelInitilaziton
-        Log.d(TAG, "detectAgeGender: faceList.size ${faceList.size}")
-        detectedGenderList.clear()
-        detectedAgeList.clear()
-        for (croppedFace in faceList) {
-            Log.d(
-                TAG,
-                "detectAgeGender: croppedFace ${croppedFace.width()} ${croppedFace.height()}"
-            )
             val faceBlob = Dnn.blobFromImage(
                 croppedFace, 1.0,
                 Size(227.0, 227.0),
                 Scalar(78.4263377603, 87.7689143744, 114.895847746), false
             )
-            Log.d(
-                TAG,
-                "detectAgeGender: faceBlob ${faceBlob.width()} ${faceBlob.height()} ${faceBlob.size()}"
-            )
-            genderNet.setInput(faceBlob)
-            Log.d(TAG, "detectAgeGender: $ageNet $genderNet")
-            Log.d(TAG, "detectAgeGender: ${ageNet.layerNames} ${genderNet.layerNames}")
-            Log.d(TAG, "detectAgeGender: ${ageNet.empty()} ${genderNet.empty()}")
-//            OpenCV(3.4.3) Error: Assertion failed (inputs[0]->size[1] % blobs[0].size[1] == 0)
-            val genderPreds: Mat = genderNet.forward()
-            var index = 0
-            var max = 0.0
-            for (j in 0 until genderPreds.cols()) {
-                val d = genderPreds.get(0, j)[0]
-                if (max < d) {
-                    max = d
-                    index = j
-                }
-            }
-            val gender = genderList[index]
-            val genderConf = max
-            Log.d(MainActivity.TAG, "onCameraViewStarted: genderConf ${genderConf}")
 
 
-            ageNet.setInput(faceBlob)
-            val preds: Mat = ageNet.forward()
-            val c = preds.cols()
-            index = 0
-            max = 0.0
-            for (j in 0 until c) {
-                val d = preds.get(0, j)[0]
-                if (max < d) {
-                    max = d
-                    index = j
-                }
-            }
+            val detectedGender = processDNN(genderNet, faceBlob, genderList)
+            gender = detectedGender.first
+            val genderConfidence = detectedGender.second
 
 
-            val age = ageBucketList[index]
-            val ageConfidence = max
+            val detectedAge = processDNN(ageNet, faceBlob, ageBucketList)
+            age = detectedAge.first
+            val ageConfidence = detectedAge.second
 
-            Log.d(MainActivity.TAG, "onCameraViewStarted: ageConfidence ${ageConfidence}")
-            detectedAgeList.add(Pair(age, ageConfidence))
-            detectedGenderList.add(Pair(gender, genderConf))
+            val detectedEmotion = detectEmotion(model, croppedFace)
+            emotion = detectedEmotion.first
+            val emotionConfidence = detectedEmotion.second
+
+            infoList.add(ItemDetected(bounds, age, gender, emotion))
+
         }
-        Log.d(TAG, "detectAgeGender: detectedGenderList.size ${detectedGenderList.size}")
-        gender.value = detectedGenderList
-        Log.d(TAG, "detectAgeGender: detectedGenderList.size ${detectedAgeList.size}")
-        age.value = detectedAgeList
+        infoRegardingFaces.value = infoList
 
     }
 
-    fun processing(bitmap: Bitmap): Pair<String, Float> {
+
+    private fun processing(bitmap: Bitmap): Pair<String, Float> {
         Log.d(
             MainActivity.TAG,
             "classify: bitmap $bitmap inputImageWidth ${inputImageWidth} inputImageHeight ${inputImageHeight}"
@@ -191,9 +150,7 @@ class Classifier : ViewModel() {
     }
 
 
-    fun initializeInterpreter(model: ByteBuffer) {
-
-
+    private fun initializeInterpreter(model: ByteBuffer) {
         val interpreter = Interpreter(model)
         val inputShape = interpreter.getInputTensor(0).shape()
         Log.d(TAG, "initializeInterpreter: inputShape ${inputShape.size}")
@@ -209,44 +166,28 @@ class Classifier : ViewModel() {
     }
 
 
-    fun detectEmotion(model: ByteBuffer) {
+    fun detectEmotion(model: ByteBuffer, croppedFace: Mat): Pair<String, Float> {
         initializeInterpreter(model)
-        detectedEmotionList.clear()
+
         check(isInitialized) { "TF Lite Interpreter is not initialized yet." }
-        for (croppedFace in faceList) {
 
 
-            val croppedFaceBitmap: Bitmap = Bitmap.createBitmap(
-                croppedFace.width(),
-                croppedFace.height(),
-                Bitmap.Config.ARGB_8888
-            )
-            Utils.matToBitmap(croppedFace, croppedFaceBitmap)
-            val emotionResult = processing(croppedFaceBitmap)
-            detectedEmotionList.add(emotionResult)
-        }
-
-        emotion.value = detectedEmotionList
+        val croppedFaceBitmap: Bitmap = Bitmap.createBitmap(
+            croppedFace.width(),
+            croppedFace.height(),
+            Bitmap.Config.ARGB_8888
+        )
+        Utils.matToBitmap(croppedFace, croppedFaceBitmap)
+        return processing(croppedFaceBitmap)
     }
 
-
-//    fun classifyAsync(bitmap: Bitmap): Task<String> {
-//        val task = TaskCompletionSource<String>()
-//        executorService.execute {
-//            val result = classify(bitmap)
-//            task.setResult(result)
-//        }
-//        return task.task
-//    }
 
     fun close() {
-
         interpreter?.close()
         Log.d(TAG, "Closed TFLite interpreter.")
-
     }
 
-    fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
+    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
 
         val byteBuffer = ByteBuffer.allocateDirect(modelInputSize)
         byteBuffer.order(ByteOrder.nativeOrder())
@@ -282,7 +223,7 @@ class Classifier : ViewModel() {
             "(38-43)", "(48-53)", "(60-100)"
         )
         val emotionList = listOf("Angry", "Fear", "Happy", "Neutral", "Sad", "Surprise")
-        val genderList = listOf('M', 'F')
+        val genderList = listOf("M", "F")
 
 
     }

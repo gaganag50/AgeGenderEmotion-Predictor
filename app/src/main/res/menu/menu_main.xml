@@ -7,8 +7,5 @@
         android:title="@string/camera"
         app:showAsAction="ifRoom" />
 
-    <item android:id="@+id/detect"
-        android:icon="@drawable/ic_detect"
-        android:title="@string/detect"
-        app:showAsAction="ifRoom" />
+
 </menu>

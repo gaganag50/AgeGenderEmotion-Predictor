@@ -1,27 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/TextAppearance.AppCompat.Headline"
+    android:id="@+id/relativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context="com.gagan.agepredictor.TutorialFragment">
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/my_recycler_view"
+    <ImageView
+        android:id="@+id/blurView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#3f000000"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        android:layout_margin="8dp"
+    <com.gagan.agepredictor.custom_views.VpSwipeRefreshLayout
+        android:id="@+id/swipeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
+        <com.gagan.agepredictor.lib.BannerRecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp" />
 
-        app:layoutManager="LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
-        tools:listitem="@layout/fragment_item" />
-
-
-</LinearLayout>
+    </com.gagan.agepredictor.custom_views.VpSwipeRefreshLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
