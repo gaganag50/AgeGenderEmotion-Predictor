@@ -1,3 +1,10 @@
+<p float="left">
+<img src="githubSS/pic1.jpg" width="24%"/>
+<img src="githubSS/pic2.jpg" width="24%"/>
+<img src="githubSS/pic3.jpg" width="24%"/>
+<img src="githubSS/pic4.jpg" width="24%"/>
+</p>
+
 # Age-Predictor
 ###### Predicts age, gender and emotion from face
 
