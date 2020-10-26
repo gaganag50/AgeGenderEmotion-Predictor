@@ -1,6 +1,5 @@
 package com.gagan.agepredictor.adapters
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,7 +7,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.gagan.agepredictor.appdata.ItemDetected
-import com.gagan.agepredictor.MainActivity.Companion.TAG
 import com.gagan.agepredictor.MainActivity.Companion.emojis
 import com.gagan.agepredictor.R
 
@@ -28,10 +26,6 @@ class DetailsAdapter(private val informationExtracted: List<ItemDetected>, val o
 
         holder.faceImage.setImageBitmap(individualFaceInformation.face)
         holder.title.text = (position + 1).toString()
-        Log.d(
-            TAG,
-            "bindVH: ${individualFaceInformation.ageBucket} ${individualFaceInformation.gender} ${individualFaceInformation.emotion}"
-        )
         holder.detailAge.text = "AGE: ${individualFaceInformation.ageBucket}"
         holder.detailGender.text = "GENDER: ${individualFaceInformation.gender}"
         holder.detailEmotion.text = "EMOTION: ${individualFaceInformation.emotion}"

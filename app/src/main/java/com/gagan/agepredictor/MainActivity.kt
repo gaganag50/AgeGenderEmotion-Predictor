@@ -88,6 +88,7 @@ class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListene
 
     companion object {
         const val TAG = "GAGAN"
+
         val data = listOf(
 
             R.drawable.pic1,
@@ -116,7 +117,7 @@ class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListene
 
     }
 
-    fun replaceFragment(fragment: Fragment) {
+    private fun replaceFragment(fragment: Fragment) {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.fragment_container, fragment)
         fragmentTransaction.addToBackStack(null)

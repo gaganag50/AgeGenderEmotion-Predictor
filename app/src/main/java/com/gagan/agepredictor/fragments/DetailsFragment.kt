@@ -5,7 +5,6 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,14 +17,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gagan.agepredictor.Classifier
 import com.gagan.agepredictor.appdata.InfoExtracted
 import com.gagan.agepredictor.appdata.ItemDetected
-import com.gagan.agepredictor.MainActivity.Companion.TAG
 import com.gagan.agepredictor.MainActivity.Companion.data
 import com.gagan.agepredictor.adapters.DetailsAdapter
 import com.gagan.agepredictor.databinding.FragmentDetailsBinding
 import kotlinx.coroutines.launch
 import org.opencv.android.Utils
 import org.opencv.core.*
-import org.opencv.dnn.Net
 import org.opencv.imgproc.Imgproc
 import java.io.*
 import java.nio.ByteBuffer
@@ -41,13 +38,9 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
 
     private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
-    lateinit var mSelectedImage: Bitmap
-    lateinit var frame: Mat
+    private lateinit var mSelectedImage: Bitmap
+    private lateinit var frame: Mat
     private val classifier: Classifier by activityViewModels()
-
-
-    private lateinit var ageNet: Net
-    private lateinit var genderNet: Net
 
     @Throws(IOException::class)
     fun loadModelFile(assetManager: AssetManager, filename: String): ByteBuffer {
@@ -61,36 +54,17 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
 
     private fun emotionModelInitialization(): ByteBuffer {
         val assetManager = requireContext().assets
-        val model = loadModelFile(assetManager, "mnist.tflite")
-        return model
+        return loadModelFile(assetManager, "mnist.tflite")
     }
 
     private fun ageModelInitialization(): ByteBuffer {
         val assetManager = requireContext().assets
-        val model = loadModelFile(assetManager, "age_gender.tflite")
-        return model
+        return loadModelFile(assetManager, "age_gender.tflite")
     }
     private fun genderModelInitialization(): ByteBuffer {
         val assetManager = requireContext().assets
-        val model = loadModelFile(assetManager, "gender.tflite")
-        return model
+        return loadModelFile(assetManager, "gender.tflite")
     }
-
-//    private fun ageGenderModelInitilaziton(): Pair<Net, Net> {
-//        val protoAge: String = getPath("age_deploy.prototxt", requireContext())
-//        val weightsAge: String = getPath("age_net.caffemodel", requireContext())
-//        ageNet = Dnn.readNetFromCaffe(protoAge, weightsAge)
-//        Log.d(TAG, "onCameraViewStarted: ageNet $ageNet")
-//
-//
-//        val protoGender: String = getPath("gender_deploy.prototxt", requireContext())
-//        val weightsGender: String = getPath("gender_net.caffemodel", requireContext())
-//        genderNet = Dnn.readNetFromCaffe(protoGender, weightsGender)
-//        Log.d(TAG, "onCameraViewStarted: genderNet $genderNet")
-//
-//        return Pair(ageNet, genderNet)
-//
-//    }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -108,9 +82,9 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
                 val emotionModelInitialization = emotionModelInitialization()
                 val ageModelInitialization = ageModelInitialization()
                 val genderModelInitialization = genderModelInitialization()
-                Log.d(TAG, "onViewCreated: ageModelInitialization: ${ageModelInitialization}")
-                Log.d(TAG, "onViewCreated: genderModelInitialization: ${genderModelInitialization}")
-                Log.d(TAG, "onViewCreated: emotionModelInitialization: ${emotionModelInitialization}")
+//                Log.d(TAG, "onViewCreated: ageModelInitialization: ${ageModelInitialization}")
+//                Log.d(TAG, "onViewCreated: genderModelInitialization: ${genderModelInitialization}")
+//                Log.d(TAG, "onViewCreated: emotionModelInitialization: ${emotionModelInitialization}")
                 classifier.runFaceContourDetection(
                     mSelectedImage,
                     frame,
@@ -128,7 +102,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
             itemDetectedList.clear()
             infoExtractedList = boundsList
             showToast("${boundsList.size} faces detected")
-            for ((index, items) in boundsList.withIndex()) {
+            for (items in boundsList) {
                 val bounds = items.rect
                 val left = bounds.left
                 val top = bounds.top
@@ -232,7 +206,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
                 showToast("UnRecognized command")
                 activity?.onBackPressed()
             } else {
-                Log.d(TAG, "onCreateView: filePath is  NULL")
+//                Log.d(TAG, "onCreateView: filePath is  NULL")
                 mSelectedImage = BitmapFactory.decodeResource(
                     context?.resources,
                     data[position]
@@ -275,7 +249,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
             // Return a path to file which may be read in common way.
             return outFile.absolutePath
         } catch (ex: IOException) {
-            Log.i(TAG, "Failed to upload a file")
+//            Log.i(TAG, "Failed to upload a file")
         }
         return ""
     }

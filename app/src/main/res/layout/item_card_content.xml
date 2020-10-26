@@ -86,7 +86,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginStart="4dp"
-            android:contentDescription="TODO"
+            android:contentDescription="@string/imageview"
             app:layout_constraintStart_toEndOf="@+id/detail_emotion"
             app:layout_constraintTop_toTopOf="@+id/detail_emotion"
             tools:srcCompat="@drawable/surprise" />

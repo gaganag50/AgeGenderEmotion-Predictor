@@ -1,11 +1,9 @@
 package com.gagan.agepredictor
 
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.gagan.agepredictor.appdata.InfoExtracted
 import com.gagan.agepredictor.utils.SingleLiveEvent
-import com.google.android.gms.common.internal.FallbackServiceBroker
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -71,7 +69,7 @@ class Classifier : ViewModel() {
                 )
             }
             .addOnFailureListener { e ->
-                e.message?.let { Log.d(TAG, "runFaceContourDetection: $it") }
+                e.message?.let { /*Log.d(TAG, "runFaceContourDetection: $it")*/ }
             }
     }
 
@@ -110,7 +108,7 @@ class Classifier : ViewModel() {
             gender = detectedGender
             val detectedEmotion = detectEmotion(model, croppedFace)
             emotion = detectedEmotion.first
-            val emotionConfidence = detectedEmotion.second
+//            val emotionConfidence = detectedEmotion.second
             infoList.add(InfoExtracted(bounds, age, gender, emotion))
         }
         infoRegardingFaces.value = infoList
@@ -119,7 +117,7 @@ class Classifier : ViewModel() {
 
     fun anonymizeFaceSimple(frame: Mat, position: Int, factor: Double = 3.0) {
         isProcessing.value = true
-        val rect = boundingBoxes.get(position)
+        val rect = boundingBoxes[position]
         val (h, w) = Pair(rect.height(), rect.width())
         var kW = (w / factor).roundToInt()
         var kH = (h / factor).roundToInt()
@@ -163,7 +161,7 @@ class Classifier : ViewModel() {
         val output = Array(1) { FloatArray(EMOTION_OUTPUT_CLASSES_COUNT) }
         interpreterEmotion?.run(byteBuffer, output)
         val result = output[0]
-        val maxIndex = result.indices.maxBy { result[it] } ?: -1
+        val maxIndex = result.indices.maxByOrNull { result[it] } ?: -1
         return Pair(emotionList[maxIndex], result[maxIndex])
     }
 
@@ -209,10 +207,7 @@ class Classifier : ViewModel() {
             Array(1) { FloatArray(2) }
         interpreterGender?.run(byteBuffer, output)
         val result = output[0]
-        Log.d(TAG, "genderProcessing: result.size ${result.size}")
-        result.forEach {
-            Log.d(TAG, "genderProcessing: $it")
-        }
+
         return if (result[0] < 0.5) {
             "M"
         } else {
@@ -245,18 +240,9 @@ class Classifier : ViewModel() {
 
     private fun initializeGenderInterpreter(genderModelInitialization: ByteBuffer) {
         val interpreter = Interpreter(genderModelInitialization)
-        Log.d(
-            TAG,
-            "initializeGenderInterpreter: ${interpreter.outputTensorCount} ${interpreter.inputTensorCount}"
-        )
 
         val inputShape = interpreter.getInputTensor(0).shape()
-        Log.d(TAG, "initializeGenderInterpreter: inputShape ${inputShape.size}")
-        inputShape.forEach { Log.d(TAG, "initializeGenderInterpreter: inputShape ${it}") }
 
-        val realOutputShape = interpreter.getOutputTensor(0).shape()
-        Log.d(TAG, "initializeGenderInterpreter: realOutputShape ${realOutputShape.size}")
-        realOutputShape.forEach { Log.d(TAG, "initializeGenderInterpreter: realOutputShape ${it}") }
         this.inputAgeGenderImageWidth = inputShape[1]
         inputAgeGenderImageHeight = inputShape[2]
         modelAgeGenderInputSize =
@@ -345,7 +331,6 @@ class Classifier : ViewModel() {
     }
 
     companion object {
-        const val TAG = "DigitClassifier"
 
         const val FLOAT_TYPE_SIZE = 4
         const val EMOTION_PIXEL_SIZE = 1
@@ -355,12 +340,7 @@ class Classifier : ViewModel() {
         private const val AGE_GENDER_OUTPUT_CLASSES_COUNT = 101
 
 
-        val ageBucketList = listOf(
-            "(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)",
-            "(38-43)", "(48-53)", "(60-100)"
-        )
         val emotionList = listOf("Angry", "Fear", "Happy", "Neutral", "Sad", "Surprise")
-        val genderList = listOf("M", "F")
 
 
     }
