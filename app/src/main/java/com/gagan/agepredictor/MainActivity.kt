@@ -4,16 +4,16 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import com.gagan.agepredictor.databinding.ActivityMainBinding
+import com.gagan.agepredictor.fragments.AboutFragment
+import com.gagan.agepredictor.fragments.TutorialFragment
 import com.github.dhaval2404.imagepicker.ImagePicker
-import com.gagan.agepredictor.DetailsFragment as DetailsFragment1
+import com.gagan.agepredictor.fragments.DetailsFragment as DetailsFragment1
 
 class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
@@ -44,6 +44,11 @@ class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListene
                 clickPhoto()
                 true
             }
+            R.id.about -> {
+                replaceFragment(AboutFragment())
+                true
+            }
+
 
             else -> super.onOptionsItemSelected(item)
         }
@@ -57,9 +62,7 @@ class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListene
                 val fragment = DetailsFragment1()
                 val bundle = Bundle()
                 bundle.putString("filePath", filePath)
-                Log.d(TAG, "onActivityResult: bundle ${bundle}")
-                Log.d(TAG, "onActivityResult: bundle ${bundle.get("position")}")
-                Log.d(TAG, "onActivityResult: bundle ${bundle.get("filePath")}")
+
                 fragment.arguments = bundle
                 replaceFragment(fragment)
             }
@@ -87,28 +90,39 @@ class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListene
         const val TAG = "GAGAN"
         val data = listOf(
 
-            R.drawable.pic4,
+            R.drawable.pic1,
+            R.drawable.pic2,
             R.drawable.pic3,
-            R.drawable.pic6
+            R.drawable.pic4,
+            R.drawable.pic5,
+            R.drawable.pic6,
+            R.drawable.pic7,
+            R.drawable.pic8,
+            R.drawable.pic9,
+            R.drawable.pic10
 
-//
-//            R.drawable.black, R.drawable.boy, R.drawable.couple,
-//            R.drawable.randeep_couple,
-//            R.drawable.ben,
-//            R.drawable.plain,
-//            R.drawable.family,
-//            R.drawable.tony_resized,
-//            R.drawable.shawn_resized,
-//            R.drawable.arjit_resized
+
         )
+
+        val emojis = mapOf(
+            Pair("Angry", R.drawable.angry),
+            Pair("Fear", R.drawable.fear),
+            Pair("Happy", R.drawable.happy),
+            Pair("Neutral", R.drawable.neutral),
+            Pair("Sad", R.drawable.sad),
+            Pair("Surprise", R.drawable.surprise)
+        )
+
+
     }
 
-    fun replaceFragment(fragment:Fragment){
+    fun replaceFragment(fragment: Fragment) {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.fragment_container, fragment)
         fragmentTransaction.addToBackStack(null)
         fragmentTransaction.commit()
     }
+
     override fun onItemSelected(position: Int) {
         val fragment = DetailsFragment1()
         val bundle = Bundle()

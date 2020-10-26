@@ -18,4 +18,19 @@
     <string name="description_individual_face">individual face</string>
     <string name="blur_this_face">BLUR this face</string>
     <string name="imageview">ImageView</string>
+    <string name="about">About</string>
+    <string name="app_version">0.0.1</string>
+    <string name="app_description">Lightweight Age, Gender and Emotion predicton app on Android</string>
+    <string name="rate_app">Rate App</string>
+    <string name="rate_app_encouragement">Rate this app to show your support!</string>
+    <string name="rate_on_playstore">Rate on PlayStore</string>
+    <string name="privacy_policy_url" translatable="false">https://github.com/gaganag50/Privacy-Policy-of-Age-Predictor/blob/main/index.md</string>
+
+    <string name="privacy_policy_title">AgePredictor\'s Privacy Policy</string>
+    <string name="privacy_policy_encouragement">The AgePredictor project takes your privacy very seriously. Therefore, the app does not collect any data without your consent. \AgePredictor\'s privacy policy explains in detail what data is sent and stored when you send a crash report.</string>
+    <string name="read_privacy_policy">Read privacy policy</string>
+    <string name="share_dialog_title">Share with</string>
+
+
+
 </resources>

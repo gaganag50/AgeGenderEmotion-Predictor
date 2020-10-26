@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "538531083972",
+    "firebase_url": "https://agepredictor-436ff.firebaseio.com",
+    "project_id": "agepredictor-436ff",
+    "storage_bucket": "agepredictor-436ff.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:538531083972:android:e3c9be7f9ffba3440efb91",
+        "android_client_info": {
+          "package_name": "com.gagan.agepredictor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "538531083972-dn2kti12dl071suq1b03v90am3p9umib.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9i8TlXJHpTCnQFzHdZYkcyE60RFXgaO0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "538531083972-dn2kti12dl071suq1b03v90am3p9umib.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

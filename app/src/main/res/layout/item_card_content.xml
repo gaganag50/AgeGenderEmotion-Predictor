@@ -13,7 +13,7 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/linearLayout"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -34,7 +34,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:layout_height="100dp"
             tools:layout_width="100dp"
-            tools:src="@drawable/pic3"/>
+            tools:src="@drawable/pic3" />
 
         <TextView
             android:id="@+id/face_title"
@@ -81,19 +81,23 @@
             app:layout_constraintTop_toBottomOf="@+id/detail_gender"
             tools:text="Happy" />
 
+        <ImageView
+            android:id="@+id/detail_emoji"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="4dp"
+            android:contentDescription="TODO"
+            app:layout_constraintStart_toEndOf="@+id/detail_emotion"
+            app:layout_constraintTop_toTopOf="@+id/detail_emotion"
+            tools:srcCompat="@drawable/surprise" />
 
         <Button
             android:id="@+id/blur_face"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
             android:text="@string/blur_this_face"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/individual_face" />
+            app:layout_constraintStart_toStartOf="parent" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,10 @@
         android:icon="@drawable/ic_camera"
         android:title="@string/camera"
         app:showAsAction="ifRoom" />
+    <item android:id="@+id/about"
+        android:title="@string/about"
+        app:showAsAction="never" />
+
 
 
 </menu>
