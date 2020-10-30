@@ -75,7 +75,7 @@ class BannerScaleHelper {
         })
     }
 
-    fun setCurrentItem(item: Int, smoothScroll: Boolean) {
+    private fun setCurrentItem(item: Int, smoothScroll: Boolean) {
         if (mRecyclerView == null) {
             return
         }
@@ -151,17 +151,6 @@ class BannerScaleHelper {
             setCurrentItem(item, false)
         }
 
-    fun setScale(scale: Float) {
-        mScale = scale
-    }
-
-    fun setPagePadding(pagePadding: Int) {
-        mPagePadding = pagePadding
-    }
-
-    fun setShowLeftCardWidth(showLeftCardWidth: Int) {
-        mShowLeftCardWidth = showLeftCardWidth
-    }
 
 
     private class CardLinearSnapHelper : LinearSnapHelper() {

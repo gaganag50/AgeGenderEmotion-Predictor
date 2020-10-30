@@ -39,13 +39,6 @@ class BannerAdapterHelper {
         }
     }
 
-    fun setPagePadding(pagePadding: Int) {
-        sPagePadding = pagePadding
-    }
-
-    fun setShowLeftCardWidth(showLeftCardWidth: Int) {
-        sShowLeftCardWidth = showLeftCardWidth
-    }
 
     companion object {
         var sPagePadding = 15

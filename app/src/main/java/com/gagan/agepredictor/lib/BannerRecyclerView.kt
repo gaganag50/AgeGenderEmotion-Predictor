@@ -36,28 +36,9 @@ class BannerRecyclerView : RecyclerView {
         }
     }
 
-    fun setOnPageChangeListener(listener: OnPageChangeListener?) {
-        mOnPageChangeListener = listener
-    }
 
-    fun addOnPageChangeListener(listener: OnPageChangeListener) {
-        if (mOnPageChangeListeners == null) {
-            mOnPageChangeListeners = ArrayList()
-        }
-        mOnPageChangeListeners!!.add(listener)
-    }
 
-    fun removeOnPageChangeListener(listener: OnPageChangeListener) {
-        if (mOnPageChangeListeners != null) {
-            mOnPageChangeListeners!!.remove(listener)
-        }
-    }
 
-    fun clearOnPageChangeListeners() {
-        if (mOnPageChangeListeners != null) {
-            mOnPageChangeListeners!!.clear()
-        }
-    }
 
     interface OnPageChangeListener {
         fun onPageSelected(position: Int)

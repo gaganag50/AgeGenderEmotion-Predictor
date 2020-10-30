@@ -53,4 +53,8 @@ class AboutFragment: Fragment() {
         return inflatedView
 
     }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

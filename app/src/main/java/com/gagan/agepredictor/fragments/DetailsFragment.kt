@@ -226,6 +226,10 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
 
         return view
     }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onDestroy() {
         classifier.close()

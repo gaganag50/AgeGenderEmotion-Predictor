@@ -9,10 +9,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.MainActivity.Companion.emojis
 import com.gagan.agepredictor.R
+import com.gagan.agepredictor.databinding.ItemCardContentBinding
 
 
 class DetailsAdapter(private val informationExtracted: List<ItemDetected>, val onClickListener: onBlurFaceListener) :
     RecyclerView.Adapter<DetailsAdapter.DetailViewHolder>() {
+    private var _binding: ItemCardContentBinding? = null
+    private val binding get() = _binding!!
 
     interface onBlurFaceListener{
         fun onBlurFace(position: Int)
@@ -37,9 +40,14 @@ class DetailsAdapter(private val informationExtracted: List<ItemDetected>, val o
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetailViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_card_content, parent, false)
 
+        _binding= ItemCardContentBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+
+        val view = binding.root
         return DetailViewHolder(view,onClickListener)
     }
 

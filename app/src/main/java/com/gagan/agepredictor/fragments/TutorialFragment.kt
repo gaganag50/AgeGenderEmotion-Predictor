@@ -70,7 +70,10 @@ class TutorialFragment : Fragment(), CardAdapter.onPhotoSelectedListener {
     override fun onPhotoSelected(position:Int) {
         listener?.onItemSelected(position)
     }
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
 
 }

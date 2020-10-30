@@ -83,8 +83,8 @@
 
         <ImageView
             android:id="@+id/detail_emoji"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_marginStart="4dp"
             android:contentDescription="@string/imageview"
             app:layout_constraintStart_toEndOf="@+id/detail_emotion"
