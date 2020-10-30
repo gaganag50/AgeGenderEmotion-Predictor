@@ -120,13 +120,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
                     Bitmap.Config.ARGB_8888
                 )
                 Utils.matToBitmap(croppedFace, faceBitmap)
-                Imgproc.rectangle(
-                    frame,
-                    Point(left.toDouble(), top.toDouble()),
-                    Point(right.toDouble(), bottom.toDouble()),
-                    Scalar(0.0, 255.0, 0.0),
-                    3
-                )
+
 
 
                 val age = items.ageBucket
@@ -137,6 +131,21 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
                 itemDetectedList.add(ItemDetected(faceBitmap, age, gender, emotion))
 
 
+            }
+            for (items in boundsList) {
+                val bounds = items.rect
+                val left = bounds.left
+                val top = bounds.top
+                val right = bounds.right
+                val bottom = bounds.bottom
+
+                Imgproc.rectangle(
+                    frame,
+                    Point(left.toDouble(), top.toDouble()),
+                    Point(right.toDouble(), bottom.toDouble()),
+                    Scalar(0.0, 255.0, 0.0),
+                    3
+                )
             }
 
             Utils.matToBitmap(frame, mSelectedImage)
