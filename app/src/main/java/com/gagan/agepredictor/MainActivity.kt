@@ -11,11 +11,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.gagan.agepredictor.databinding.ActivityMainBinding
 import com.gagan.agepredictor.fragments.AboutFragment
-import com.gagan.agepredictor.fragments.TutorialFragment
+import com.gagan.agepredictor.fragments.MainFragment
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.gagan.agepredictor.fragments.DetailsFragment as DetailsFragment1
 
-class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListener {
+class MainActivity : AppCompatActivity(), MainFragment.OnItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListene
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
 
-        val fragment = TutorialFragment()
+        val fragment = MainFragment()
         fragmentTransaction.add(R.id.fragment_container, fragment)
         fragmentTransaction.commit()
     }
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity(), TutorialFragment.onItemSelectedListene
     }
 
     companion object {
-        const val TAG = "GAGAN"
+//        const val TAG = "GAGAN"
 
         val data = listOf(
 

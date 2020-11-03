@@ -1,10 +1,11 @@
-package com.gagan.agepredictor.custom_views
+package com.gagan.agepredictor.lib.custom_views
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import kotlin.math.abs
 
 
 class VpSwipeRefreshLayout(context: Context, attrs: AttributeSet?) :
@@ -14,10 +15,9 @@ class VpSwipeRefreshLayout(context: Context, attrs: AttributeSet?) :
 
     // Record viewPager Whether to drag the mark
     private var mIsVpDragger = false
-    private val mTouchSlop: Int
+    private val mTouchSlop: Int = ViewConfiguration.get(context).scaledTouchSlop
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        val action = ev.action
-        when (action) {
+        when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
                 //Record the position of the finger
                 startY = ev.y
@@ -36,8 +36,8 @@ class VpSwipeRefreshLayout(context: Context, attrs: AttributeSet?) :
                 // Get current finger position
                 val endY = ev.y
                 val endX = ev.x
-                val distanceX = Math.abs(endX - startX)
-                val distanceY = Math.abs(endY - startY)
+                val distanceX = abs(endX - startX)
+                val distanceY = abs(endY - startY)
                 // If the X-axis displacement is greater than the Y-axis displacement, then hand
                 // the event to viewPager deal with。
                 if (distanceX > mTouchSlop && distanceX > distanceY) {
@@ -52,7 +52,4 @@ class VpSwipeRefreshLayout(context: Context, attrs: AttributeSet?) :
         return super.onInterceptTouchEvent(ev)
     }
 
-    init {
-        mTouchSlop = ViewConfiguration.get(context).scaledTouchSlop
-    }
 }

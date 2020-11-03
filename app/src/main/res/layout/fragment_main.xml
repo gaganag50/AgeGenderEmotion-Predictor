@@ -6,12 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.gagan.agepredictor.fragments.TutorialFragment">
+    tools:context="com.gagan.agepredictor.fragments.MainFragment">
 
 
 
 
-    <com.gagan.agepredictor.custom_views.VpSwipeRefreshLayout
+    <com.gagan.agepredictor.lib.custom_views.VpSwipeRefreshLayout
         android:id="@+id/swipeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,5 +25,5 @@
             android:layout_marginTop="30dp"
             android:layout_marginBottom="30dp" />
 
-    </com.gagan.agepredictor.custom_views.VpSwipeRefreshLayout>
+    </com.gagan.agepredictor.lib.custom_views.VpSwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

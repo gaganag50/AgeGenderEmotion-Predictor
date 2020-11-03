@@ -10,48 +10,47 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gagan.agepredictor.adapters.CardAdapter
 import com.gagan.agepredictor.MainActivity.Companion.data
-import com.gagan.agepredictor.databinding.FragmentTutorialBinding
+import com.gagan.agepredictor.databinding.FragmentMainBinding
 import com.gagan.agepredictor.lib.BannerScaleHelper
 
 
-class TutorialFragment : Fragment(), CardAdapter.onPhotoSelectedListener {
-    private lateinit var viewAdapter: RecyclerView.Adapter<*>
-    private lateinit var viewManager: RecyclerView.LayoutManager
+class MainFragment : Fragment(), CardAdapter.OnPhotoSelectedListener {
 
-    private var _binding: FragmentTutorialBinding? = null
+
+    private var _binding: FragmentMainBinding? = null
 
     private val binding get() = _binding!!
 
 
-    interface onItemSelectedListener {
+    interface OnItemSelectedListener {
         fun onItemSelected(position: Int)
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listener = context as? onItemSelectedListener
+        listener = context as? OnItemSelectedListener
         if (listener == null) {
             throw ClassCastException("$context must implement OnArticleSelectedListener")
         }
     }
-    var listener: onItemSelectedListener? = null
+    private var listener: OnItemSelectedListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
-        _binding = FragmentTutorialBinding.inflate(inflater, container, false)
+        _binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
+        val viewManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
 
         // HERE LAMBDA WASN'T WORKING
         // GIVING ERROR TO CHANGE THE COMPLIER LANGUAGE SETTING TO 1.4 EVEN THOUGH THE VERSION WAS ALREADY 1.4.10
-        viewAdapter = CardAdapter(data,this)
+        val viewAdapter = CardAdapter(data,this)
 
         binding.recyclerView.apply {
 
@@ -69,6 +68,7 @@ class TutorialFragment : Fragment(), CardAdapter.onPhotoSelectedListener {
 
     override fun onPhotoSelected(position:Int) {
         listener?.onItemSelected(position)
+
     }
     override fun onDestroyView() {
         super.onDestroyView()

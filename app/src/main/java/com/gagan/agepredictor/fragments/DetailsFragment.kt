@@ -1,6 +1,5 @@
 package com.gagan.agepredictor.fragments
 
-import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -15,21 +14,25 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gagan.agepredictor.Classifier
-import com.gagan.agepredictor.appdata.InfoExtracted
-import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.MainActivity.Companion.data
 import com.gagan.agepredictor.adapters.DetailsAdapter
+import com.gagan.agepredictor.appdata.InfoExtracted
+import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.databinding.FragmentDetailsBinding
 import kotlinx.coroutines.launch
 import org.opencv.android.Utils
-import org.opencv.core.*
+import org.opencv.core.Mat
+import org.opencv.core.Point
+import org.opencv.core.Rect
+import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
-import java.io.*
+import java.io.FileInputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 
 
-class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
+class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     private lateinit var viewManager: RecyclerView.LayoutManager
 
     private val itemDetectedList: MutableList<ItemDetected> = mutableListOf()
@@ -78,13 +81,10 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
         binding.findFaces.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
 
-//                val ageGenderModelInitilaziton = ageGenderModelInitilaziton()
                 val emotionModelInitialization = emotionModelInitialization()
                 val ageModelInitialization = ageModelInitialization()
                 val genderModelInitialization = genderModelInitialization()
-//                Log.d(TAG, "onViewCreated: ageModelInitialization: ${ageModelInitialization}")
-//                Log.d(TAG, "onViewCreated: genderModelInitialization: ${genderModelInitialization}")
-//                Log.d(TAG, "onViewCreated: emotionModelInitialization: ${emotionModelInitialization}")
+
                 classifier.runFaceContourDetection(
                     mSelectedImage,
                     frame,
@@ -164,35 +164,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
 
     }
 
-//    private fun setTextInTextView(list: MutableList<ItemDetected>) {
-//        var displayText: String = String()
-//        var displayList: MutableList<String> = mutableListOf()
-//
-//        for (faceDetails in list) {
-//            val age = faceDetails.ageBucket
-//            val gender = faceDetails.gender
-//            val emo = faceDetails.emotion
-//            var faceString = String()
-//            if (age != null) {
-//                faceString += "\nAGE: $age"
-//            }
-//            if (gender != null) {
-//                faceString += "\nGENDER: $gender"
-//            }
-//            if (emo != null) {
-//                faceString += "\nEMOTION: $emo"
-//            }
-//
-//            displayList.add(faceString)
-//        }
-////        if(displayList.isNotEmpty()) {
-////            displayList = displayList.drop(1) as MutableList<String>
-////        }
-////        for (item in displayList) {
-////            displayText += item
-////        }
-////        binding.details.text = displayText
-//    }
 
     private fun showToast(message: String) =
         Toast.makeText(activity?.applicationContext, message, Toast.LENGTH_SHORT).show()
@@ -215,7 +186,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
                 showToast("UnRecognized command")
                 activity?.onBackPressed()
             } else {
-//                Log.d(TAG, "onCreateView: filePath is  NULL")
                 mSelectedImage = BitmapFactory.decodeResource(
                     context?.resources,
                     data[position]
@@ -243,28 +213,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.onBlurFaceListener {
     override fun onDestroy() {
         classifier.close()
         super.onDestroy()
-    }
-
-    private fun getPath(file: String, context: Context): String {
-        val assetManager: AssetManager = context.assets
-        val inputStream: BufferedInputStream?
-        try {
-            // Read data from assets.
-            inputStream = BufferedInputStream(assetManager.open(file))
-            val data = ByteArray(inputStream.available())
-            inputStream.read(data)
-            inputStream.close()
-            // Create copy file in storage.
-            val outFile = File(context.filesDir, file)
-            val os = FileOutputStream(outFile)
-            os.write(data)
-            os.close()
-            // Return a path to file which may be read in common way.
-            return outFile.absolutePath
-        } catch (ex: IOException) {
-//            Log.i(TAG, "Failed to upload a file")
-        }
-        return ""
     }
 
     override fun onBlurFace(position: Int) {

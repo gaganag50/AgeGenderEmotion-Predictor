@@ -5,6 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.text.bold
+import androidx.core.text.buildSpannedString
 import androidx.recyclerview.widget.RecyclerView
 import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.MainActivity.Companion.emojis
@@ -12,12 +14,12 @@ import com.gagan.agepredictor.R
 import com.gagan.agepredictor.databinding.ItemCardContentBinding
 
 
-class DetailsAdapter(private val informationExtracted: List<ItemDetected>, val onClickListener: onBlurFaceListener) :
+class DetailsAdapter(private val informationExtracted: List<ItemDetected>, private val onClickListener: OnBlurFaceListener) :
     RecyclerView.Adapter<DetailsAdapter.DetailViewHolder>() {
     private var _binding: ItemCardContentBinding? = null
     private val binding get() = _binding!!
 
-    interface onBlurFaceListener{
+    interface OnBlurFaceListener{
         fun onBlurFace(position: Int)
     }
 
@@ -29,10 +31,26 @@ class DetailsAdapter(private val informationExtracted: List<ItemDetected>, val o
 
         holder.faceImage.setImageBitmap(individualFaceInformation.face)
         holder.title.text = (position + 1).toString()
-        holder.detailAge.text = "AGE: ${individualFaceInformation.ageBucket}"
-        holder.detailGender.text = "GENDER: ${individualFaceInformation.gender}"
-        holder.detailEmotion.text = "EMOTION: ${individualFaceInformation.emotion}"
-        holder.detailEmoji.setImageResource(emojis[individualFaceInformation.emotion]!!)
+        val age = buildSpannedString {
+            bold { append("AGE: ") }
+            append(individualFaceInformation.ageBucket)
+        }
+
+        holder.detailAge.text = age
+        val gender = buildSpannedString {
+            bold { append("GENDER: ") }
+            append(individualFaceInformation.gender)
+        }
+
+        holder.detailGender.text = gender
+
+        val emotion = buildSpannedString {
+            bold { append("EMOTION: ") }
+            append(individualFaceInformation.emotion)
+        }
+        holder.detailEmotion.text = emotion
+        val emotionEmoji = emojis.getValue(individualFaceInformation.emotion)
+        holder.detailEmoji.setImageResource(emotionEmoji)
 
 
     }
@@ -54,14 +72,14 @@ class DetailsAdapter(private val informationExtracted: List<ItemDetected>, val o
     override fun getItemCount() = informationExtracted.size
 
 
-    class DetailViewHolder(view: View,val onBlurFaceListener: onBlurFaceListener) : RecyclerView.ViewHolder(view),View.OnClickListener {
+    class DetailViewHolder(view: View, private val onBlurFaceListener: OnBlurFaceListener) : RecyclerView.ViewHolder(view),View.OnClickListener {
         val faceImage = itemView.findViewById<ImageView>(R.id.individual_face)!!
         val title = itemView.findViewById<TextView>(R.id.face_title)!!
         val detailAge: TextView = itemView.findViewById(R.id.detail_age)!!
         val detailGender: TextView = itemView.findViewById(R.id.detail_gender)!!
         val detailEmotion: TextView = itemView.findViewById(R.id.detail_emotion)!!
         val detailEmoji:ImageView=  itemView.findViewById(R.id.detail_emoji)!!
-        val blurFace = itemView.findViewById<TextView>(R.id.blur_face)!!
+        private val blurFace = itemView.findViewById<TextView>(R.id.blur_face)!!
         init {
             blurFace.setOnClickListener(this)
         }

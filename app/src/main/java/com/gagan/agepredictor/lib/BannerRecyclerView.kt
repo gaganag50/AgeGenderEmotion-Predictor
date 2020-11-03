@@ -3,20 +3,18 @@ package com.gagan.agepredictor.lib
 import android.content.Context
 import android.util.AttributeSet
 import androidx.recyclerview.widget.RecyclerView
-import java.util.ArrayList
 
 class BannerRecyclerView : RecyclerView {
     private var mOnPageChangeListeners: MutableList<OnPageChangeListener>? = null
     private var mOnPageChangeListener: OnPageChangeListener? = null
 
-    constructor(context: Context) : super(context) {}
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(
         context,
         attrs,
         defStyle
-    ) {
-    }
+    )
 
     override fun fling(velocityX: Int, velocityY: Int): Boolean {
         var velocityX = velocityX
@@ -30,9 +28,9 @@ class BannerRecyclerView : RecyclerView {
 
     private fun solveVelocity(velocity: Int): Int {
         return if (velocity > 0) {
-            Math.min(velocity, FLING_MAX_VELOCITY)
+            velocity.coerceAtMost(FLING_MAX_VELOCITY)
         } else {
-            Math.max(velocity, -FLING_MAX_VELOCITY)
+            velocity.coerceAtLeast(-FLING_MAX_VELOCITY)
         }
     }
 
@@ -60,15 +58,8 @@ class BannerRecyclerView : RecyclerView {
     }
 
     companion object {
-        private const val FLING_SCALE_DOWN_FACTOR = 0.5f //Deceleration factor
         private const val FLING_MAX_VELOCITY = 8000 // Maximum clockwise sliding speed
         private var mEnableLimitVelocity = true
-        fun ismEnableLimitVelocity(): Boolean {
-            return mEnableLimitVelocity
-        }
 
-        fun setmEnableLimitVelocity(mEnableLimitVelocity: Boolean) {
-            Companion.mEnableLimitVelocity = mEnableLimitVelocity
-        }
     }
 }

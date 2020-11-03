@@ -6,6 +6,7 @@ import android.view.ViewTreeObserver
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.abs
 
 class BannerScaleHelper {
     private var mRecyclerView: BannerRecyclerView? = null
@@ -14,19 +15,16 @@ class BannerScaleHelper {
     private var mPagePadding =
         BannerAdapterHelper.sPagePadding
     private var mShowLeftCardWidth = BannerAdapterHelper.sShowLeftCardWidth
-    private var mCardWidth
-            = 0
-    private var mOnePageWidth
-            = 0
+    private var mCardWidth = 0
+    private var mOnePageWidth = 0
     private var mCardGalleryWidth = 0
     private var mFirstItemPos = 0
     private var mCurrentItemOffset = 0
     private val mLinearSnapHelper = CardLinearSnapHelper()
     private var mLastPos = 0
     fun attachToRecyclerView(mRecyclerView: BannerRecyclerView?) {
-        if (mRecyclerView == null) {
-            return
-        }
+        if (mRecyclerView == null) return
+
         this.mRecyclerView = mRecyclerView
         mContext = mRecyclerView.context
         mRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -115,7 +113,7 @@ class BannerScaleHelper {
         val currentItemPos = currentItem
         val offset = mCurrentItemOffset - (currentItemPos - mLastPos) * mOnePageWidth
         val percent =
-            Math.max(Math.abs(offset) * 1.0 / mOnePageWidth, 0.0001).toFloat()
+            kotlin.math.max(abs(offset) * 1.0 / mOnePageWidth, 0.0001).toFloat()
 
         var leftView: View? = null
         val currentView: View?
@@ -139,7 +137,6 @@ class BannerScaleHelper {
     }
 
 
-
     var currentItem: Int
         get() =
             mRecyclerView!!.layoutManager!!.getPosition(
@@ -150,7 +147,6 @@ class BannerScaleHelper {
         set(item) {
             setCurrentItem(item, false)
         }
-
 
 
     private class CardLinearSnapHelper : LinearSnapHelper() {
