@@ -8,4 +8,7 @@ class AgePredictionApplication: Application() {
         super.onCreate()
         OpenCVLoader.initDebug()
     }
+    companion object{
+        val TAG = "GAGANGAGAN"
+    }
 }

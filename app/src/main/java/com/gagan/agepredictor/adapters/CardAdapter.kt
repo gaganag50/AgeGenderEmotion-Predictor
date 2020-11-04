@@ -7,7 +7,6 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.gagan.agepredictor.R
 import com.gagan.agepredictor.databinding.ItemViewCardBinding
-import com.gagan.agepredictor.lib.BannerAdapterHelper
 
 
 class CardAdapter(private val list: List<Int>, private val onClickListener: OnPhotoSelectedListener) :
@@ -15,7 +14,6 @@ class CardAdapter(private val list: List<Int>, private val onClickListener: OnPh
     private var _binding: ItemViewCardBinding? = null
     private val binding get() = _binding!!
 
-    private val mBannerAdapterHelper = BannerAdapterHelper()
     interface OnPhotoSelectedListener{
         fun onPhotoSelected(position: Int)
     }
@@ -26,13 +24,11 @@ class CardAdapter(private val list: List<Int>, private val onClickListener: OnPh
             false
         )
         val itemView = binding.root
-        mBannerAdapterHelper.onCreateViewHolder(parent, itemView)
         return ViewHolder(itemView, onClickListener)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        mBannerAdapterHelper.onBindViewHolder(holder.itemView, position, itemCount)
-        holder.mImageView.setImageResource(list[position % list.size])
+        holder.mImageView.setImageResource(list[position])
     }
 
     override fun getItemCount(): Int {
@@ -48,9 +44,10 @@ class CardAdapter(private val list: List<Int>, private val onClickListener: OnPh
             itemView.setOnClickListener(this)
         }
         override fun onClick(p0: View?) {
-            onPhotoSelectedListener.onPhotoSelected(adapterPosition)
-
-
+            val position = adapterPosition
+            if (position != RecyclerView.NO_POSITION) {
+                onPhotoSelectedListener.onPhotoSelected(position)
+            }
         }
     }
 
