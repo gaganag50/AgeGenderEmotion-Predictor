@@ -11,13 +11,7 @@ class NavigationHelper {
     companion object {
         const val MAIN_FRAGMENT_TAG = "main_fragment_tag"
 
-        fun gotoMainFragment(fragmentManager: FragmentManager) {
-            val fragment = MainFragment()
-            fragmentManager.beginTransaction().apply {
-                add(R.id.fragment_container, fragment, MAIN_FRAGMENT_TAG)
-                commit()
-            }
-        }
+
 
         fun showTitleAndBackButtonInFragment(activity: FragmentActivity, title: String) {
             activity.let {

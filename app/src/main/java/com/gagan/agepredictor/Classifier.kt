@@ -1,6 +1,8 @@
 package com.gagan.agepredictor
 
 import android.graphics.Bitmap
+import android.util.Log
+import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.appdata.InfoExtracted
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
@@ -48,7 +50,8 @@ class Classifier {
         mSelectedImage: Bitmap, frame: Mat, ageModelInitialization: ByteBuffer,
         genderModelInitialization: ByteBuffer,
         emotionModelInitialization: ByteBuffer
-    ) {
+
+        ) {
         isProcessing.postValue(true)
         val highAccuracyOpts = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -70,7 +73,9 @@ class Classifier {
                 )
             }
             .addOnFailureListener { e ->
-                e.message?.let { /*Log.d(TAG, "runFaceContourDetection: $it")*/ }
+                e.message?.let {
+                    Log.d(TAG, "runFaceContourDetection: $it")
+                }
             }
     }
 

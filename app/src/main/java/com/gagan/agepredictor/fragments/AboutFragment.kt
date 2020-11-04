@@ -1,13 +1,11 @@
 package com.gagan.agepredictor.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.databinding.FragmentAboutBinding
 import com.gagan.agepredictor.utils.NavigationHelper.Companion.showTitleAndBackButtonInFragment
 
@@ -34,9 +32,7 @@ class AboutFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                Log.d(TAG, "onOptionsItemSelected: ")
                 activity?.onBackPressed()
-
             }
         }
         return super.onOptionsItemSelected(item)

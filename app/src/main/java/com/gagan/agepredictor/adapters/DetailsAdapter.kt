@@ -10,9 +10,9 @@ import androidx.core.text.buildSpannedString
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.MainActivity.Companion.emojis
 import com.gagan.agepredictor.R
+import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.databinding.ItemCardContentBinding
 
 
@@ -81,11 +81,11 @@ class DetailsAdapter(private val onClickListener: OnBlurFaceListener) :
     companion object{
         val DIFF_CALLBACK = object :DiffUtil.ItemCallback<ItemDetected>(){
             override fun areItemsTheSame(oldItem: ItemDetected, newItem: ItemDetected): Boolean {
-                return oldItem.face == newItem.face;
+                return oldItem.face == newItem.face
             }
 
             override fun areContentsTheSame(oldItem: ItemDetected, newItem: ItemDetected): Boolean {
-                return oldItem.equals(newItem)
+                return oldItem == newItem
             }
 
         }

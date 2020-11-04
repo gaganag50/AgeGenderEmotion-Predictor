@@ -105,8 +105,6 @@ class MainActivity : AppCompatActivity(), MainFragment.OnItemSelectedListener {
             R.drawable.pic8,
             R.drawable.pic9,
             R.drawable.pic10
-
-
         )
 
         val emojis = mapOf(

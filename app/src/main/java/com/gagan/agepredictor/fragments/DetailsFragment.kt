@@ -4,16 +4,13 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.Classifier
-import com.gagan.agepredictor.ImageUtils
+import com.gagan.agepredictor.utils.ImageUtils
 import com.gagan.agepredictor.MainActivity
 import com.gagan.agepredictor.MainActivity.Companion.data
 import com.gagan.agepredictor.R
@@ -23,10 +20,7 @@ import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.databinding.FragmentDetailsBinding
 import com.gagan.agepredictor.utils.NavigationHelper
 import es.dmoral.toasty.Toasty
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.core.Point
@@ -77,7 +71,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         return loadModelFile(assetManager, "gender.tflite")
     }
 
-    fun updateUI() {
+    private fun updateUI() {
         classifier.isProcessing.observe(viewLifecycleOwner, {
             when {
                 it -> binding.progressBar.visibility = View.VISIBLE
@@ -93,13 +87,15 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         val genderModelInitialization = genderModelInitialization()
         val viewAdapter = DetailsAdapter(this)
         updateUI()
+
         binding.findFaces.setOnClickListener {
             classifier.runFaceContourDetection(
                 mSelectedImage,
                 frame,
                 ageModelInitialization,
                 genderModelInitialization,
-                emotionModelInitialization
+                emotionModelInitialization,
+
             )
         }
 
@@ -108,7 +104,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         classifier.infoRegardingFaces.observe(viewLifecycleOwner, { boundsList ->
             itemDetectedList.clear()
             infoExtractedList = boundsList
-            Log.d(TAG, "onViewCreated: $boundsList")
             if (boundsList.isNullOrEmpty()) {
                 Toasty.success(requireContext(), "No face detected", Toast.LENGTH_SHORT, true)
                     .show()
@@ -181,7 +176,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         val view = binding.root
         activity?.let { NavigationHelper.showTitleAndBackButtonInFragment(it, "Details") }
         val filePath = arguments?.getString("filePath")
-        Log.d(TAG, "onCreateView: ")
         if (filePath == null) {
             val position = arguments?.getInt("position")
             if (position == null) {
@@ -210,19 +204,15 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.d(TAG, "onDestroyView: ")
         _binding = null
     }
 
     override fun onDestroy() {
         classifier.close()
-        Log.d(TAG, "onDestroy: ")
         super.onDestroy()
     }
 
     override fun onBlurFace(position: Int) {
-        Log.d(TAG, "onBlurFace: ")
-
         viewLifecycleOwner.lifecycleScope.launch {
 
             classifier.anonymizeFaceSimple(frame, position)
@@ -236,7 +226,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
     }
 
-    private fun saveCartoon(): String {
+    private fun saveBitmap(): String {
 
         val cartoonBitmap = mSelectedImage
         val file = File(
@@ -265,11 +255,10 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
         when (item.itemId) {
             android.R.id.home -> {
-                Log.d(TAG, "onOptionsItemSelected: ")
                 activity?.onBackPressed()
 
             }
-            R.id.action_save -> saveCartoon()
+            R.id.action_save -> saveBitmap()
         }
         return super.onOptionsItemSelected(item)
     }

@@ -1,4 +1,4 @@
-package com.gagan.agepredictor
+package com.gagan.agepredictor.utils
 
 import android.graphics.Bitmap
 import java.io.File
