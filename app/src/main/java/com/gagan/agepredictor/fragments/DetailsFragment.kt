@@ -4,21 +4,25 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.Classifier
+import com.gagan.agepredictor.ImageUtils
+import com.gagan.agepredictor.MainActivity
 import com.gagan.agepredictor.MainActivity.Companion.data
+import com.gagan.agepredictor.R
 import com.gagan.agepredictor.adapters.DetailsAdapter
 import com.gagan.agepredictor.appdata.InfoExtracted
 import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.databinding.FragmentDetailsBinding
+import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.launch
 import org.opencv.android.Utils
 import org.opencv.core.Mat
@@ -26,10 +30,13 @@ import org.opencv.core.Point
 import org.opencv.core.Rect
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
+import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
@@ -43,7 +50,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     private val binding get() = _binding!!
     private lateinit var mSelectedImage: Bitmap
     private lateinit var frame: Mat
-    private val classifier: Classifier by activityViewModels()
+    private val classifier: Classifier = Classifier()
 
     @Throws(IOException::class)
     fun loadModelFile(assetManager: AssetManager, filename: String): ByteBuffer {
@@ -101,7 +108,12 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         classifier.infoRegardingFaces.observe(viewLifecycleOwner, { boundsList ->
             itemDetectedList.clear()
             infoExtractedList = boundsList
-            showToast("${boundsList.size} faces detected")
+            Log.d(TAG, "onViewCreated: $boundsList")
+            if(boundsList.isNullOrEmpty()){
+                Toasty.success(requireContext(),"No face detected",Toast.LENGTH_SHORT,true).show()
+            }else {
+                Toasty.success(requireContext(),"${boundsList.size} faces detected",Toast.LENGTH_SHORT,true).show()
+            }
             for (items in boundsList) {
                 val bounds = items.rect
                 val left = bounds.left
@@ -122,7 +134,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
                 Utils.matToBitmap(croppedFace, faceBitmap)
 
 
-
                 val age = items.ageBucket
                 val gender = items.gender
                 val emotion = items.emotion
@@ -131,21 +142,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
                 itemDetectedList.add(ItemDetected(faceBitmap, age, gender, emotion))
 
 
-            }
-            for (items in boundsList) {
-                val bounds = items.rect
-                val left = bounds.left
-                val top = bounds.top
-                val right = bounds.right
-                val bottom = bounds.bottom
-
-                Imgproc.rectangle(
-                    frame,
-                    Point(left.toDouble(), top.toDouble()),
-                    Point(right.toDouble(), bottom.toDouble()),
-                    Scalar(0.0, 255.0, 0.0),
-                    3
-                )
             }
 
             Utils.matToBitmap(frame, mSelectedImage)
@@ -165,9 +161,12 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     }
 
 
-    private fun showToast(message: String) =
-        Toast.makeText(activity?.applicationContext, message, Toast.LENGTH_SHORT).show()
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -183,7 +182,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         if (filePath == null) {
             val position = arguments?.getInt("position")
             if (position == null) {
-                showToast("UnRecognized command")
+                Toasty.error(requireContext(),"UnRecognized command",Toast.LENGTH_SHORT,true).show()
                 activity?.onBackPressed()
             } else {
                 mSelectedImage = BitmapFactory.decodeResource(
@@ -221,6 +220,39 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         }
         Utils.matToBitmap(frame, mSelectedImage)
         binding.imageView.setImageBitmap(mSelectedImage)
+    }
+    private fun saveCartoon(): String {
+
+        val cartoonBitmap = mSelectedImage
+        val file = File(
+            MainActivity.getOutputDirectory(requireContext()),
+            SimpleDateFormat(
+                FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()) + "_cartoon.jpg")
+
+        ImageUtils.saveBitmap(cartoonBitmap, file)
+        context?.let {
+            Toasty.success(it, "saved to " + file.absolutePath.toString(), Toast.LENGTH_SHORT,true)
+                .show()
+        }
+
+        return file.absolutePath
+
+    }
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_details, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_save -> saveCartoon()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+    companion object{
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+
     }
 
 }

@@ -1,6 +1,7 @@
 package com.gagan.agepredictor
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,6 +14,8 @@ import com.gagan.agepredictor.databinding.ActivityMainBinding
 import com.gagan.agepredictor.fragments.AboutFragment
 import com.gagan.agepredictor.fragments.MainFragment
 import com.github.dhaval2404.imagepicker.ImagePicker
+import es.dmoral.toasty.Toasty
+import java.io.File
 import com.gagan.agepredictor.fragments.DetailsFragment as DetailsFragment1
 
 class MainActivity : AppCompatActivity(), MainFragment.OnItemSelectedListener {
@@ -67,10 +70,10 @@ class MainActivity : AppCompatActivity(), MainFragment.OnItemSelectedListener {
                 replaceFragment(fragment)
             }
             ImagePicker.RESULT_ERROR -> {
-                Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show()
+                Toasty.error(this, ImagePicker.getError(data), Toast.LENGTH_SHORT,true).show()
             }
             else -> {
-                Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show()
+                Toasty.info(this, "Task Cancelled", Toast.LENGTH_SHORT,true).show()
             }
         }
     }
@@ -113,6 +116,14 @@ class MainActivity : AppCompatActivity(), MainFragment.OnItemSelectedListener {
             Pair("Sad", R.drawable.sad),
             Pair("Surprise", R.drawable.surprise)
         )
+        /** Use external media if it is available, our app's file directory otherwise */
+        fun getOutputDirectory(context: Context): File {
+            val appContext = context.applicationContext
+            val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
+                File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() } }
+            return if (mediaDir != null && mediaDir.exists())
+                mediaDir else appContext.filesDir
+        }
 
 
     }

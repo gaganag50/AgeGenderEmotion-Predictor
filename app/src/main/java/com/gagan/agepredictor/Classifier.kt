@@ -19,7 +19,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToInt
 
-class Classifier : ViewModel() {
+class Classifier {
 
 
     val infoRegardingFaces = SingleLiveEvent<List<InfoExtracted>>()
@@ -81,35 +81,37 @@ class Classifier : ViewModel() {
         genderModelInitialization: ByteBuffer,
         model: ByteBuffer
     ) {
-        if (faces.isEmpty()) {
-            return
-        }
         val infoList: MutableList<InfoExtracted> = mutableListOf()
+        if (faces.isNotEmpty()) {
 
-        var age: String
-        var gender: String
-        var emotion: String
-        boundingBoxes.clear()
-        for (face in faces) {
-            val bounds = face.boundingBox
-            boundingBoxes.add(bounds)
-            val left = bounds.left
-            val top = bounds.top
-            val right = bounds.right
-            val bottom = bounds.bottom
-            val rectCrop = Rect(
-                Point(left.toDouble(), top.toDouble()),
-                Point(right.toDouble(), bottom.toDouble())
-            )
-            val croppedFace = Mat(frame, rectCrop)
-            val detectedAge = detectAge(ageModelInitialization, croppedFace)
-            val detectedGender = detectGender(genderModelInitialization, croppedFace)
-            age = detectedAge.toString()
-            gender = detectedGender
-            val detectedEmotion = detectEmotion(model, croppedFace)
-            emotion = detectedEmotion.first
+
+
+            var age: String
+            var gender: String
+            var emotion: String
+            boundingBoxes.clear()
+            for (face in faces) {
+                val bounds = face.boundingBox
+                boundingBoxes.add(bounds)
+                val left = bounds.left
+                val top = bounds.top
+                val right = bounds.right
+                val bottom = bounds.bottom
+                val rectCrop = Rect(
+                    Point(left.toDouble(), top.toDouble()),
+                    Point(right.toDouble(), bottom.toDouble())
+                )
+                val croppedFace = Mat(frame, rectCrop)
+                val detectedAge = detectAge(ageModelInitialization, croppedFace)
+                val detectedGender = detectGender(genderModelInitialization, croppedFace)
+                age = detectedAge.toString()
+                gender = detectedGender
+                val detectedEmotion = detectEmotion(model, croppedFace)
+                emotion = detectedEmotion.first
 //            val emotionConfidence = detectedEmotion.second
-            infoList.add(InfoExtracted(bounds, age, gender, emotion))
+                infoList.add(InfoExtracted(bounds, age, gender, emotion))
+            }
+
         }
         infoRegardingFaces.value = infoList
         isProcessing.value = false
