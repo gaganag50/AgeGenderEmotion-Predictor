@@ -20,7 +20,8 @@
     <string name="privacy_policy_encouragement">The AgePredictor project takes your privacy very seriously. Therefore, the app does not collect any data without your consent. \AgePredictor\'s privacy policy explains in detail what data is sent and stored when you send a crash report.</string>
     <string name="read_privacy_policy">Read privacy policy</string>
     <string name="share_dialog_title">Share with</string>
-
+    <string name="button_label_title">Button</string>
+    <string name="todo">TODO</string>
 
 
 </resources>

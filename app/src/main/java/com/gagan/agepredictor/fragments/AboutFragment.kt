@@ -1,18 +1,18 @@
 package com.gagan.agepredictor.fragments
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.gagan.agepredictor.R
-import com.gagan.agepredictor.utils.ShareUtils.openUrlInBrowser
+import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.databinding.FragmentAboutBinding
+import com.gagan.agepredictor.utils.NavigationHelper.Companion.closeFragment
+import com.gagan.agepredictor.utils.NavigationHelper.Companion.showTitleAndBackButtonInFragment
 
-class AboutFragment: Fragment() {
+class AboutFragment : Fragment() {
 
     private var _binding: FragmentAboutBinding? = null
     private val binding get() = _binding!!
@@ -22,37 +22,28 @@ class AboutFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentAboutBinding.inflate(inflater, container, false)
-        val inflatedView = binding.root
+        activity?.let { showTitleAndBackButtonInFragment(it,"About") }
+        return binding.root
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
 
-        val  privacyPolicyLink= binding.privacyPolicyLink
-        privacyPolicyLink.setOnClickListener {
-            openUrlInBrowser(
-                requireContext(),
-                resources.getString(R.string.privacy_policy_url)
-            )
-        }
-        binding.playstoreLink.setOnClickListener {
-            try {
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("market://details?id=" + requireContext().packageName)
-                    )
-                )
-            } catch (e: ActivityNotFoundException) {
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("http://play.google.com/store/apps/details?id=" + requireContext().packageName)
-                    )
-                )
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                Log.d(TAG, "onOptionsItemSelected: ")
+                activity?.supportFragmentManager?.let { closeFragment(it) }
+                return true
             }
         }
-
-        return inflatedView
-
+        return super.onOptionsItemSelected(item)
     }
+
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

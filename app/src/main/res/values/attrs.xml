@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="LabelLinkView">
+        <attr name="android:text" />
+        <attr name="leadingIcon" format="integer" />
+        <attr name="linkUrl" format="string" />
+    </declare-styleable>
+
+
+</resources>

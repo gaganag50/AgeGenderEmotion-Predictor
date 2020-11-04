@@ -1,13 +1,14 @@
 package com.gagan.agepredictor
 
 import android.graphics.Bitmap
-import androidx.lifecycle.ViewModel
 import com.gagan.agepredictor.appdata.InfoExtracted
-import com.gagan.agepredictor.utils.SingleLiveEvent
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.hadilq.liveevent.LiveEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.core.Point
@@ -22,8 +23,8 @@ import kotlin.math.roundToInt
 class Classifier {
 
 
-    val infoRegardingFaces = SingleLiveEvent<List<InfoExtracted>>()
-    val isProcessing = SingleLiveEvent<Boolean>()
+    val infoRegardingFaces = LiveEvent<List<InfoExtracted>>()
+    val isProcessing = LiveEvent<Boolean>()
     private val boundingBoxes: MutableList<android.graphics.Rect> = mutableListOf()
     private var interpreterEmotion: Interpreter? = null
     private var interpreterAge: Interpreter? = null
@@ -48,7 +49,7 @@ class Classifier {
         genderModelInitialization: ByteBuffer,
         emotionModelInitialization: ByteBuffer
     ) {
-        isProcessing.value = true
+        isProcessing.postValue(true)
         val highAccuracyOpts = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
             .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
@@ -114,36 +115,43 @@ class Classifier {
 
         }
         infoRegardingFaces.value = infoList
-        isProcessing.value = false
+        isProcessing.postValue(false)
     }
 
-    fun anonymizeFaceSimple(frame: Mat, position: Int, factor: Double = 3.0) {
-        isProcessing.value = true
-        val rect = boundingBoxes[position]
-        val (h, w) = Pair(rect.height(), rect.width())
-        var kW = (w / factor).roundToInt()
-        var kH = (h / factor).roundToInt()
-        if (kW % 2 == 0) {
-            kW -= 1
+
+    suspend fun anonymizeFaceSimple(frame: Mat, position: Int, factor: Double = 3.0) {
+        withContext(Dispatchers.IO){
+            isProcessing.postValue(true)
+            val rect = boundingBoxes[position]
+            val (h, w) = Pair(rect.height(), rect.width())
+            var kW = (w / factor).roundToInt()
+            var kH = (h / factor).roundToInt()
+            if (kW % 2 == 0) {
+                kW -= 1
+            }
+            if (kH % 2 == 0) {
+                kH -= 1
+            }
+            val left = rect.left
+            val top = rect.top
+            val right = rect.right
+            val bottom = rect.bottom
+            val roi = Rect(
+                Point(left.toDouble(), top.toDouble()),
+                Point(right.toDouble(), bottom.toDouble())
+            )
+            Imgproc.GaussianBlur(
+                Mat(frame, roi),
+                Mat(frame, roi),
+                Size(kW.toDouble(), kH.toDouble()),
+                0.0
+            )
+            isProcessing.postValue(false)
+
+
         }
-        if (kH % 2 == 0) {
-            kH -= 1
-        }
-        val left = rect.left
-        val top = rect.top
-        val right = rect.right
-        val bottom = rect.bottom
-        val roi = Rect(
-            Point(left.toDouble(), top.toDouble()),
-            Point(right.toDouble(), bottom.toDouble())
-        )
-        Imgproc.GaussianBlur(
-            Mat(frame, roi),
-            Mat(frame, roi),
-            Size(kW.toDouble(), kH.toDouble()),
-            0.0
-        )
-        isProcessing.value = false
+
+
     }
 
 

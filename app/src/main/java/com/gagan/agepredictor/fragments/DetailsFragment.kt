@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,12 +22,14 @@ import com.gagan.agepredictor.appdata.InfoExtracted
 import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.databinding.FragmentDetailsBinding
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.core.Point
 import org.opencv.core.Rect
-import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.io.FileInputStream
@@ -40,11 +41,9 @@ import java.util.*
 
 
 class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
-    private lateinit var viewManager: RecyclerView.LayoutManager
 
     private val itemDetectedList: MutableList<ItemDetected> = mutableListOf()
     private var infoExtractedList: List<InfoExtracted> = listOf()
-    private var viewAdapter: DetailsAdapter? = null
 
     private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
@@ -71,36 +70,36 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         val assetManager = requireContext().assets
         return loadModelFile(assetManager, "age_gender.tflite")
     }
+
     private fun genderModelInitialization(): ByteBuffer {
         val assetManager = requireContext().assets
         return loadModelFile(assetManager, "gender.tflite")
     }
 
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    fun updateUI() {
         classifier.isProcessing.observe(viewLifecycleOwner, {
             when {
                 it -> binding.progressBar.visibility = View.VISIBLE
                 else -> binding.progressBar.visibility = View.GONE
             }
         })
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val emotionModelInitialization = emotionModelInitialization()
+        val ageModelInitialization = ageModelInitialization()
+        val genderModelInitialization = genderModelInitialization()
+        val viewAdapter = DetailsAdapter(this)
+        updateUI()
         binding.findFaces.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch {
-
-                val emotionModelInitialization = emotionModelInitialization()
-                val ageModelInitialization = ageModelInitialization()
-                val genderModelInitialization = genderModelInitialization()
-
-                classifier.runFaceContourDetection(
-                    mSelectedImage,
-                    frame,
-                    ageModelInitialization,
-                    genderModelInitialization,
-                    emotionModelInitialization
-                )
-
-            }
+            classifier.runFaceContourDetection(
+                mSelectedImage,
+                frame,
+                ageModelInitialization,
+                genderModelInitialization,
+                emotionModelInitialization
+            )
         }
 
 
@@ -109,10 +108,16 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
             itemDetectedList.clear()
             infoExtractedList = boundsList
             Log.d(TAG, "onViewCreated: $boundsList")
-            if(boundsList.isNullOrEmpty()){
-                Toasty.success(requireContext(),"No face detected",Toast.LENGTH_SHORT,true).show()
-            }else {
-                Toasty.success(requireContext(),"${boundsList.size} faces detected",Toast.LENGTH_SHORT,true).show()
+            if (boundsList.isNullOrEmpty()) {
+                Toasty.success(requireContext(), "No face detected", Toast.LENGTH_SHORT, true)
+                    .show()
+            } else {
+                Toasty.success(
+                    requireContext(),
+                    "${boundsList.size} faces detected",
+                    Toast.LENGTH_SHORT,
+                    true
+                ).show()
             }
             for (items in boundsList) {
                 val bounds = items.rect
@@ -147,11 +152,11 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
             Utils.matToBitmap(frame, mSelectedImage)
 
             binding.imageView.setImageBitmap(mSelectedImage)
-            viewAdapter?.notifyDataSetChanged()
+            viewAdapter.submitList(itemDetectedList)
         })
 
-        viewManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
-        viewAdapter = DetailsAdapter(itemDetectedList, this)
+        val viewManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
+
 
         binding.recyclerView.apply {
             layoutManager = viewManager
@@ -161,12 +166,11 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     }
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -174,22 +178,19 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     ): View? {
         _binding = FragmentDetailsBinding.inflate(inflater, container, false)
         val view = binding.root
-
-
         val filePath = arguments?.getString("filePath")
-
-
+        Log.d(TAG, "onCreateView: ")
         if (filePath == null) {
             val position = arguments?.getInt("position")
             if (position == null) {
-                Toasty.error(requireContext(),"UnRecognized command",Toast.LENGTH_SHORT,true).show()
+                Toasty.error(requireContext(), "UnRecognized command", Toast.LENGTH_SHORT, true)
+                    .show()
                 activity?.onBackPressed()
             } else {
                 mSelectedImage = BitmapFactory.decodeResource(
                     context?.resources,
                     data[position]
                 )
-
             }
         } else {
             mSelectedImage = BitmapFactory.decodeFile(filePath)
@@ -204,23 +205,35 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
         return view
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        Log.d(TAG, "onDestroyView: ")
         _binding = null
     }
 
     override fun onDestroy() {
         classifier.close()
+        Log.d(TAG, "onDestroy: ")
         super.onDestroy()
     }
 
     override fun onBlurFace(position: Int) {
+        Log.d(TAG, "onBlurFace: ")
+
         viewLifecycleOwner.lifecycleScope.launch {
+
             classifier.anonymizeFaceSimple(frame, position)
+            Utils.matToBitmap(frame, mSelectedImage)
+            binding.imageView.setImageBitmap(mSelectedImage)
         }
-        Utils.matToBitmap(frame, mSelectedImage)
-        binding.imageView.setImageBitmap(mSelectedImage)
+
+
+
+
+
     }
+
     private fun saveCartoon(): String {
 
         val cartoonBitmap = mSelectedImage
@@ -228,17 +241,19 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
             MainActivity.getOutputDirectory(requireContext()),
             SimpleDateFormat(
                 FILENAME_FORMAT, Locale.US
-            ).format(System.currentTimeMillis()) + "_cartoon.jpg")
+            ).format(System.currentTimeMillis()) + "_cartoon.jpg"
+        )
 
         ImageUtils.saveBitmap(cartoonBitmap, file)
         context?.let {
-            Toasty.success(it, "saved to " + file.absolutePath.toString(), Toast.LENGTH_SHORT,true)
+            Toasty.success(it, "saved to " + file.absolutePath.toString(), Toast.LENGTH_SHORT, true)
                 .show()
         }
 
         return file.absolutePath
 
     }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_details, menu)
         super.onCreateOptionsMenu(menu, inflater)
@@ -250,7 +265,8 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         }
         return super.onOptionsItemSelected(item)
     }
-    companion object{
+
+    companion object {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
 
     }
