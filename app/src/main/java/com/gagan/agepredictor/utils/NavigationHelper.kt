@@ -26,10 +26,6 @@ class NavigationHelper {
             }
         }
 
-        fun closeFragment(fragmentManager: FragmentManager) {
-            fragmentManager.popBackStackImmediate(
-                MAIN_FRAGMENT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE
-            )
-        }
+
     }
 }

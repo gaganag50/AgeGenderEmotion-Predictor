@@ -21,6 +21,7 @@ import com.gagan.agepredictor.adapters.DetailsAdapter
 import com.gagan.agepredictor.appdata.InfoExtracted
 import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.databinding.FragmentDetailsBinding
+import com.gagan.agepredictor.utils.NavigationHelper
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -178,6 +179,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     ): View? {
         _binding = FragmentDetailsBinding.inflate(inflater, container, false)
         val view = binding.root
+        activity?.let { NavigationHelper.showTitleAndBackButtonInFragment(it, "Details") }
         val filePath = arguments?.getString("filePath")
         Log.d(TAG, "onCreateView: ")
         if (filePath == null) {
@@ -260,7 +262,13 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
         when (item.itemId) {
+            android.R.id.home -> {
+                Log.d(TAG, "onOptionsItemSelected: ")
+                activity?.onBackPressed()
+
+            }
             R.id.action_save -> saveCartoon()
         }
         return super.onOptionsItemSelected(item)

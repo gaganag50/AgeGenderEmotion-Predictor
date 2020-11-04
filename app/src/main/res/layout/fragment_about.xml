@@ -68,7 +68,7 @@
         android:text="@string/rate_on_playstore"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:linkUrl="http://play.google.com/store/apps/details?id=com.gagan.trafficsignrecognition" />
+        app:linkUrl="http://play.google.com/store/apps/details?id=com.gagan.agepredictor" />
 
     <TextView
         android:layout_width="match_parent"
@@ -96,7 +96,7 @@
         android:text="@string/read_privacy_policy"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:linkUrl="https://github.com/gaganag50/Traffic-Sign-Recognition-Privacy-Policy/blob/main/index.md" />
+        app:linkUrl="@string/privacy_policy_url" />
 
 
 </LinearLayout>

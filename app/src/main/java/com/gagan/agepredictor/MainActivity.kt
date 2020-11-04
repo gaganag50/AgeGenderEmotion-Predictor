@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import com.gagan.agepredictor.databinding.ActivityMainBinding
 import com.gagan.agepredictor.fragments.AboutFragment
 import com.gagan.agepredictor.fragments.MainFragment
+import com.gagan.agepredictor.utils.NavigationHelper.Companion.MAIN_FRAGMENT_TAG
 import com.github.dhaval2404.imagepicker.ImagePicker
 import es.dmoral.toasty.Toasty
 import java.io.File
@@ -131,7 +132,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnItemSelectedListener {
     private fun replaceFragment(fragment: Fragment) {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.fragment_container, fragment)
-        fragmentTransaction.addToBackStack(null)
+        fragmentTransaction.addToBackStack(MAIN_FRAGMENT_TAG)
         fragmentTransaction.commit()
     }
 

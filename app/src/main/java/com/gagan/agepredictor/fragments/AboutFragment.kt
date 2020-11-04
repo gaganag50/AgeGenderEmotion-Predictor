@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.databinding.FragmentAboutBinding
-import com.gagan.agepredictor.utils.NavigationHelper.Companion.closeFragment
 import com.gagan.agepredictor.utils.NavigationHelper.Companion.showTitleAndBackButtonInFragment
 
 class AboutFragment : Fragment() {
@@ -36,8 +35,8 @@ class AboutFragment : Fragment() {
         when (item.itemId) {
             android.R.id.home -> {
                 Log.d(TAG, "onOptionsItemSelected: ")
-                activity?.supportFragmentManager?.let { closeFragment(it) }
-                return true
+                activity?.onBackPressed()
+
             }
         }
         return super.onOptionsItemSelected(item)

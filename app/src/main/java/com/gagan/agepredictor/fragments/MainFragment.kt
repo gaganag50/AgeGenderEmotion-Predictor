@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.gagan.agepredictor.MainActivity
 import com.gagan.agepredictor.MainActivity.Companion.data
 import com.gagan.agepredictor.adapters.CardAdapter
 import com.gagan.agepredictor.databinding.FragmentMainBinding
@@ -36,6 +37,8 @@ class MainFragment : Fragment(), CardAdapter.OnPhotoSelectedListener {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
+        activity?.title = "AgePredictor"
+        (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
         return binding.root
     }
     
