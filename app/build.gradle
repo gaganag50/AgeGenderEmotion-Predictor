@@ -8,12 +8,13 @@ android {
     buildToolsVersion "30.0.2"
     buildFeatures {
         viewBinding true
+        mlModelBinding true
     }
     defaultConfig {
         applicationId "com.gagan.agepredictor"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 4
+        versionCode 6
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -27,6 +28,9 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'
+            }
         }
     }
     compileOptions {
@@ -60,11 +64,15 @@ preBuild.doFirst {
 
 }
 dependencies {
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0-rc1'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.0.0-nightly'
+
+
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "androidx.core:core-ktx:1.3.2"
     implementation "androidx.appcompat:appcompat:1.2.0"
-    implementation "androidx.constraintlayout:constraintlayout:2.0.3"
+    implementation "androidx.constraintlayout:constraintlayout:2.0.4"
     implementation project(path: ":openCVLibrary343")
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
     implementation "androidx.recyclerview:recyclerview:1.1.0"
@@ -76,8 +84,11 @@ dependencies {
     implementation "com.github.dhaval2404:imagepicker:1.7.5"
 
     implementation "com.google.android.material:material:1.3.0-alpha03"
-    implementation "org.tensorflow:tensorflow-lite:0.0.0-nightly"
-    implementation "org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly"
+
+
+    // TensorFlow Lite dependency
+    implementation("org.tensorflow:tensorflow-lite:0.0.0-nightly") { changing = true }
+    implementation("org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly") { changing = true }
 
 
     implementation "androidx.fragment:fragment-ktx:1.2.5"
@@ -92,6 +103,7 @@ dependencies {
     implementation "com.yarolegovich:discrete-scrollview:1.5.1"
     implementation "com.github.GrenderG:Toasty:1.5.0"
     implementation "com.github.hadilq.liveevent:liveevent:1.2.0"
+
 }
 
 

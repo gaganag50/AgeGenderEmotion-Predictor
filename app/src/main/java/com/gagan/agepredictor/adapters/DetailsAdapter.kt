@@ -92,4 +92,3 @@ class DetailsAdapter(private val onClickListener: OnBlurFaceListener) :
     }
 
 }
-

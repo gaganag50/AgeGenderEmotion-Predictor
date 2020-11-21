@@ -22,6 +22,7 @@
     <string name="button_label_title">Button</string>
     <string name="todo">TODO</string>
     <string name="save">Save</string>
+    <string name="cartoonize">Cartoonize</string>
 
 
 </resources>

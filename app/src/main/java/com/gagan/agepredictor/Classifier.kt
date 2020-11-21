@@ -1,16 +1,17 @@
 package com.gagan.agepredictor
 
 import android.graphics.Bitmap
+import android.os.SystemClock
 import android.util.Log
 import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.appdata.InfoExtracted
+import com.gagan.agepredictor.ml.WhiteboxCartoonGanDr
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.hadilq.liveevent.LiveEvent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.core.Point
@@ -18,6 +19,7 @@ import org.opencv.core.Rect
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.image.TensorImage
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToInt
@@ -51,7 +53,7 @@ class Classifier {
         genderModelInitialization: ByteBuffer,
         emotionModelInitialization: ByteBuffer
 
-        ) {
+    ) {
         isProcessing.postValue(true)
         val highAccuracyOpts = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -91,7 +93,6 @@ class Classifier {
         if (faces.isNotEmpty()) {
 
 
-
             var age: String
             var gender: String
             var emotion: String
@@ -123,9 +124,8 @@ class Classifier {
         isProcessing.postValue(false)
     }
 
-
     suspend fun anonymizeFaceSimple(frame: Mat, position: Int, factor: Double = 3.0) {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             isProcessing.postValue(true)
             val rect = boundingBoxes[position]
             val (h, w) = Pair(rect.height(), rect.width())
@@ -344,6 +344,38 @@ class Classifier {
 
         return byteBuffer
     }
+
+    private fun inferenceWithDrModel(
+        sourceImage: TensorImage,
+        model: WhiteboxCartoonGanDr
+    ): TensorImage {
+        val outputs = model.process(sourceImage)
+        val cartoonizedImage = outputs.cartoonizedImageAsTensorImage
+        model.close()
+        return cartoonizedImage
+    }
+
+
+    private val coroutineScope = CoroutineScope(
+        Dispatchers.Main
+    )
+
+    fun cartoonizeImage(
+        bitmap: Bitmap,
+        model: WhiteboxCartoonGanDr
+    ): Deferred<Pair<Bitmap, Long>> =
+        coroutineScope.async(Dispatchers.IO) {
+            isProcessing.postValue(true)
+            val startTime = SystemClock.uptimeMillis()
+            val sourceImage = TensorImage.fromBitmap(bitmap)
+
+            val cartoonizedImage: TensorImage = inferenceWithDrModel(sourceImage, model)
+            val inferenceTime = SystemClock.uptimeMillis() - startTime
+            val cartoonizedImageBitmap = cartoonizedImage.bitmap
+            isProcessing.postValue(false)
+            return@async Pair(cartoonizedImageBitmap, inferenceTime)
+        }
+
 
     companion object {
 

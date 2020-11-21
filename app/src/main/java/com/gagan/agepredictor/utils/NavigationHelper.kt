@@ -2,10 +2,7 @@ package com.gagan.agepredictor.utils
 
 
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
 import com.gagan.agepredictor.MainActivity
-import com.gagan.agepredictor.R
-import com.gagan.agepredictor.fragments.MainFragment
 
 class NavigationHelper {
     companion object {

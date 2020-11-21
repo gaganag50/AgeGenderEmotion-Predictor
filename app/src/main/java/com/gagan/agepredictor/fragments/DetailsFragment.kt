@@ -4,11 +4,13 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.Classifier
 import com.gagan.agepredictor.utils.ImageUtils
 import com.gagan.agepredictor.MainActivity
@@ -18,8 +20,11 @@ import com.gagan.agepredictor.adapters.DetailsAdapter
 import com.gagan.agepredictor.appdata.InfoExtracted
 import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.databinding.FragmentDetailsBinding
+import com.gagan.agepredictor.ml.WhiteboxCartoonGanDr
 import com.gagan.agepredictor.utils.NavigationHelper
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.opencv.android.Utils
 import org.opencv.core.Mat
@@ -72,7 +77,9 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     }
 
     private fun updateUI() {
+        Log.d(TAG, "updateUI: ${classifier.isProcessing} ${classifier.isProcessing.value}")
         classifier.isProcessing.observe(viewLifecycleOwner, {
+            Log.d(TAG, "updateUI: $it")
             when {
                 it -> binding.progressBar.visibility = View.VISIBLE
                 else -> binding.progressBar.visibility = View.GONE
@@ -80,14 +87,24 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         })
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val emotionModelInitialization = emotionModelInitialization()
         val ageModelInitialization = ageModelInitialization()
         val genderModelInitialization = genderModelInitialization()
+        val model = WhiteboxCartoonGanDr.newInstance(requireContext())
         val viewAdapter = DetailsAdapter(this)
         updateUI()
 
+        binding.cartoonize.setOnClickListener {
+            CoroutineScope(Dispatchers.Main).launch(Dispatchers.Main) {
+                val (outputBitmap, inferenceTime) = classifier.cartoonizeImage(mSelectedImage,model).await()
+                mSelectedImage = outputBitmap
+                binding.imageView.setImageBitmap(mSelectedImage)
+                Toasty.success(requireContext(),"$inferenceTime",Toast.LENGTH_SHORT,true).show()
+            }
+        }
         binding.findFaces.setOnClickListener {
             classifier.runFaceContourDetection(
                 mSelectedImage,
@@ -96,7 +113,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
                 genderModelInitialization,
                 emotionModelInitialization,
 
-            )
+                )
         }
 
 
