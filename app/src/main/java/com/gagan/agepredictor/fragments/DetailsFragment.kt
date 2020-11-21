@@ -99,13 +99,30 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
         binding.cartoonize.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch(Dispatchers.Main) {
-                val (outputBitmap, inferenceTime) = classifier.cartoonizeImage(mSelectedImage,model).await()
-                mSelectedImage = outputBitmap
+                val (outputBitmap, inferenceTime) = classifier.cartoonizeImage(
+                    mSelectedImage,
+                    model
+                ).await()
+                mSelectedImage = Bitmap.createScaledBitmap(
+                    outputBitmap,
+                    mSelectedImage.width,
+                    mSelectedImage.height,true
+                )
                 binding.imageView.setImageBitmap(mSelectedImage)
-                Toasty.success(requireContext(),"$inferenceTime",Toast.LENGTH_SHORT,true).show()
+                Toasty.success(
+                    requireContext(),
+                    "Cartoonized in $inferenceTime ms",
+                    Toast.LENGTH_SHORT,
+                    true
+                ).show()
+                viewAdapter.submitList(mutableListOf())
             }
         }
         binding.findFaces.setOnClickListener {
+            frame = Mat()
+            Utils.bitmapToMat(mSelectedImage, frame)
+            Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGBA2RGB)
+
             classifier.runFaceContourDetection(
                 mSelectedImage,
                 frame,
@@ -165,6 +182,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
             Utils.matToBitmap(frame, mSelectedImage)
 
             binding.imageView.setImageBitmap(mSelectedImage)
+            Log.d(TAG, "onViewCreated: ${itemDetectedList.size}")
             viewAdapter.submitList(itemDetectedList)
         })
 
@@ -211,9 +229,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
 
         binding.imageView.setImageBitmap(mSelectedImage)
-        frame = Mat()
-        Utils.bitmapToMat(mSelectedImage, frame)
-        Imgproc.cvtColor(frame, frame, Imgproc.COLOR_RGBA2RGB)
+
 
 
         return view
@@ -236,9 +252,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
             Utils.matToBitmap(frame, mSelectedImage)
             binding.imageView.setImageBitmap(mSelectedImage)
         }
-
-
-
 
 
     }

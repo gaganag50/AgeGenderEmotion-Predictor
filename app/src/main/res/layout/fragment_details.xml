@@ -11,9 +11,10 @@
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="300dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
+        android:background="#FFFFFF"
         android:contentDescription="@string/imageview"
         android:foregroundGravity="center"
         app:layout_constraintBottom_toTopOf="@+id/find_faces"
@@ -21,28 +22,45 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <TextView
         android:id="@+id/find_faces"
         android:layout_width="379dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
+        android:background="@color/ic_launcher_background"
         android:foregroundGravity="center"
         android:gravity="center"
+        android:padding="4dp"
         android:text="@string/find_faces"
+        android:textColor="#2B2929"
+        android:textSize="18sp"
+        android:textStyle="bold|italic"
         app:layout_constraintBottom_toTopOf="@+id/cartoonize"
+        app:layout_constraintEnd_toEndOf="@+id/cartoonize"
         app:layout_constraintStart_toStartOf="@+id/cartoonize"
         app:layout_constraintTop_toBottomOf="@+id/image_view" />
 
 
-    <Button
+    <TextView
         android:id="@+id/cartoonize"
-        android:layout_width="379dp"
-        android:layout_height="wrap_content"
 
+        android:layout_width="379dp"
+
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:background="@color/ic_launcher_background"
+        android:gravity="center"
+        android:padding="4dp"
         android:text="@string/cartoonize"
+        android:textColor="#2B2929"
+        android:textSize="18sp"
+        android:textStyle="bold|italic"
         app:layout_constraintBottom_toTopOf="@+id/recyclerView"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/find_faces" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -64,7 +82,7 @@
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:translationZ="2dp"
+
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/recyclerView"
         app:layout_constraintEnd_toEndOf="parent"
