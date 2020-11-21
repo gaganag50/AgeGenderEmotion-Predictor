@@ -46,8 +46,6 @@ class MainFragment : Fragment(), CardAdapter.OnPhotoSelectedListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // HERE LAMBDA WASN'T WORKING
-        // GIVING ERROR TO CHANGE THE COMPLIER LANGUAGE SETTING TO 1.4 EVEN THOUGH THE VERSION WAS ALREADY 1.4.10
 
         binding.itemPicker.setOrientation(DSVOrientation.HORIZONTAL)
         binding.itemPicker.setItemTransformer(

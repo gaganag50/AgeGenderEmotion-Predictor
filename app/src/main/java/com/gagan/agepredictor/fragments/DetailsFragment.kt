@@ -4,15 +4,12 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.Classifier
-import com.gagan.agepredictor.utils.ImageUtils
 import com.gagan.agepredictor.MainActivity
 import com.gagan.agepredictor.MainActivity.Companion.data
 import com.gagan.agepredictor.R
@@ -21,6 +18,7 @@ import com.gagan.agepredictor.appdata.InfoExtracted
 import com.gagan.agepredictor.appdata.ItemDetected
 import com.gagan.agepredictor.databinding.FragmentDetailsBinding
 import com.gagan.agepredictor.ml.WhiteboxCartoonGanDr
+import com.gagan.agepredictor.utils.ImageUtils
 import com.gagan.agepredictor.utils.NavigationHelper
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.CoroutineScope
@@ -77,12 +75,18 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
     }
 
     private fun updateUI() {
-        Log.d(TAG, "updateUI: ${classifier.isProcessing} ${classifier.isProcessing.value}")
         classifier.isProcessing.observe(viewLifecycleOwner, {
-            Log.d(TAG, "updateUI: $it")
             when {
-                it -> binding.progressBar.visibility = View.VISIBLE
-                else -> binding.progressBar.visibility = View.GONE
+                it -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.findFaces.isClickable = false
+                    binding.cartoonize.isClickable = false
+                }
+                else -> {
+                    binding.progressBar.visibility = View.GONE
+                    binding.findFaces.isClickable = true
+                    binding.cartoonize.isClickable = true
+                }
             }
         })
     }
@@ -99,14 +103,14 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
         binding.cartoonize.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch(Dispatchers.Main) {
-                val (outputBitmap, inferenceTime) = classifier.cartoonizeImage(
+                val (outputBitmap, inferenceTime) = classifier.cartoonizeImageAsync(
                     mSelectedImage,
                     model
                 ).await()
                 mSelectedImage = Bitmap.createScaledBitmap(
                     outputBitmap,
                     mSelectedImage.width,
-                    mSelectedImage.height,true
+                    mSelectedImage.height, true
                 )
                 binding.imageView.setImageBitmap(mSelectedImage)
                 Toasty.success(
@@ -115,6 +119,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
                     Toast.LENGTH_SHORT,
                     true
                 ).show()
+                itemDetectedList.clear()
                 viewAdapter.submitList(mutableListOf())
             }
         }
@@ -182,7 +187,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
             Utils.matToBitmap(frame, mSelectedImage)
 
             binding.imageView.setImageBitmap(mSelectedImage)
-            Log.d(TAG, "onViewCreated: ${itemDetectedList.size}")
+//            Log.d(TAG, "onViewCreated: ${itemDetectedList.size}")
             viewAdapter.submitList(itemDetectedList)
         })
 

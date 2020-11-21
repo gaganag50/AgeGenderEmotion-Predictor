@@ -2,8 +2,6 @@ package com.gagan.agepredictor
 
 import android.graphics.Bitmap
 import android.os.SystemClock
-import android.util.Log
-import com.gagan.agepredictor.AgePredictionApplication.Companion.TAG
 import com.gagan.agepredictor.appdata.InfoExtracted
 import com.gagan.agepredictor.ml.WhiteboxCartoonGanDr
 import com.google.mlkit.vision.common.InputImage
@@ -76,7 +74,7 @@ class Classifier {
             }
             .addOnFailureListener { e ->
                 e.message?.let {
-                    Log.d(TAG, "runFaceContourDetection: $it")
+//                    Log.d(TAG, "runFaceContourDetection: $it")
                 }
             }
     }
@@ -360,7 +358,7 @@ class Classifier {
         Dispatchers.Main
     )
 
-    fun cartoonizeImage(
+    fun cartoonizeImageAsync(
         bitmap: Bitmap,
         model: WhiteboxCartoonGanDr
     ): Deferred<Pair<Bitmap, Long>> =

@@ -9,6 +9,6 @@ class AgePredictionApplication: Application() {
         OpenCVLoader.initDebug()
     }
     companion object{
-        const val TAG = "GAGANGAGAN"
+//        const val TAG = "GAGANGAGAN"
     }
 }
