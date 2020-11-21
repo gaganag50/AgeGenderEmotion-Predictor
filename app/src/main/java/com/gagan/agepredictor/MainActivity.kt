@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnItemSelectedListener {
     }
 
     companion object {
-//        const val TAG = "GAGAN"
+        const val TAG = "GAGAN"
 
         val data = listOf(
 

@@ -310,6 +310,8 @@ class Classifier {
 
 
     fun close() {
+        interpreterAge?.close()
+        interpreterGender?.close()
         interpreterEmotion?.close()
     }
 
@@ -349,7 +351,7 @@ class Classifier {
     ): TensorImage {
         val outputs = model.process(sourceImage)
         val cartoonizedImage = outputs.cartoonizedImageAsTensorImage
-        model.close()
+
         return cartoonizedImage
     }
 

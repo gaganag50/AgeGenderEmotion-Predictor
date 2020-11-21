@@ -4,6 +4,7 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -11,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gagan.agepredictor.Classifier
 import com.gagan.agepredictor.MainActivity
+import com.gagan.agepredictor.MainActivity.Companion.TAG
 import com.gagan.agepredictor.MainActivity.Companion.data
 import com.gagan.agepredictor.R
 import com.gagan.agepredictor.adapters.DetailsAdapter
@@ -40,9 +42,9 @@ import java.util.*
 
 class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
-    private val itemDetectedList: MutableList<ItemDetected> = mutableListOf()
-    private var infoExtractedList: List<InfoExtracted> = listOf()
 
+    private var infoExtractedList: List<InfoExtracted> = listOf()
+    lateinit var model: WhiteboxCartoonGanDr
     private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
     private lateinit var mSelectedImage: Bitmap
@@ -97,8 +99,17 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
         val emotionModelInitialization = emotionModelInitialization()
         val ageModelInitialization = ageModelInitialization()
         val genderModelInitialization = genderModelInitialization()
-        val model = WhiteboxCartoonGanDr.newInstance(requireContext())
+
+        model = WhiteboxCartoonGanDr.newInstance(requireContext())
         val viewAdapter = DetailsAdapter(this)
+
+
+
+        binding.recyclerView.apply {
+            layoutManager =  LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = viewAdapter
+        }
+
         updateUI()
 
         binding.cartoonize.setOnClickListener {
@@ -119,8 +130,8 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
                     Toast.LENGTH_SHORT,
                     true
                 ).show()
-                itemDetectedList.clear()
-                viewAdapter.submitList(mutableListOf())
+
+                viewAdapter.submitList(listOf())
             }
         }
         binding.findFaces.setOnClickListener {
@@ -141,11 +152,12 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
 
         classifier.infoRegardingFaces.observe(viewLifecycleOwner, { boundsList ->
-            itemDetectedList.clear()
+
             infoExtractedList = boundsList
             if (boundsList.isNullOrEmpty()) {
                 Toasty.success(requireContext(), "No face detected", Toast.LENGTH_SHORT, true)
                     .show()
+                viewAdapter.submitList(listOf())
             } else {
                 Toasty.success(
                     requireContext(),
@@ -154,6 +166,8 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
                     true
                 ).show()
             }
+            
+            val itemDetectedList: MutableList<ItemDetected> = mutableListOf()
             for (items in boundsList) {
                 val bounds = items.rect
                 val left = bounds.left
@@ -191,13 +205,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
             viewAdapter.submitList(itemDetectedList)
         })
 
-        val viewManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
-
-
-        binding.recyclerView.apply {
-            layoutManager = viewManager
-            adapter = viewAdapter
-        }
 
     }
 
@@ -247,6 +254,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
     override fun onDestroy() {
         classifier.close()
+        model.close()
         super.onDestroy()
     }
 
