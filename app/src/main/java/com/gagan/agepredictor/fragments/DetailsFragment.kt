@@ -4,7 +4,6 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -12,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gagan.agepredictor.Classifier
 import com.gagan.agepredictor.MainActivity
-import com.gagan.agepredictor.MainActivity.Companion.TAG
 import com.gagan.agepredictor.MainActivity.Companion.data
 import com.gagan.agepredictor.R
 import com.gagan.agepredictor.adapters.DetailsAdapter
@@ -43,7 +41,6 @@ import java.util.*
 class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
 
-    private var infoExtractedList: List<InfoExtracted> = listOf()
     lateinit var model: WhiteboxCartoonGanDr
     private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
@@ -152,8 +149,6 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
 
 
         classifier.infoRegardingFaces.observe(viewLifecycleOwner, { boundsList ->
-
-            infoExtractedList = boundsList
             if (boundsList.isNullOrEmpty()) {
                 Toasty.success(requireContext(), "No face detected", Toast.LENGTH_SHORT, true)
                     .show()
@@ -166,7 +161,7 @@ class DetailsFragment : Fragment(), DetailsAdapter.OnBlurFaceListener {
                     true
                 ).show()
             }
-            
+
             val itemDetectedList: MutableList<ItemDetected> = mutableListOf()
             for (items in boundsList) {
                 val bounds = items.rect
